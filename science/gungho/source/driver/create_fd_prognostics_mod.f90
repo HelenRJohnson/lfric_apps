@@ -33,6 +33,7 @@ module create_fd_prognostics_mod
   use nlsizes_namelist_mod,           only : sm_levels
   use jules_control_init_mod,         only : n_land_tile, n_sea_ice_tile
   use jules_physics_init_mod,         only : snow_lev_tile
+  use jules_surface_config_mod,       only : l_flake_model
   use derived_config_mod,             only : l_couple_sea_ice
   use chemistry_config_mod,           only : chem_scheme,                 &
                                              chem_scheme_strat_test,      &
@@ -307,6 +308,30 @@ contains
       call setup_ancil_field("snow_layer_rgrain", depository, &
                              fd_field_collection, mesh, twod_mesh, &
                              twod=.true., ndata=snow_lev_tile)
+      ! FLake fields:
+      if ( l_flake_model ) then
+        call setup_ancil_field("lake_t_mxl_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+        call setup_ancil_field("lake_t_mean_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+        call setup_ancil_field("lake_t_ice_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+        call setup_ancil_field("lake_h_mxl_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+        call setup_ancil_field("lake_h_ice_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+        call setup_ancil_field("lake_shape_factor_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+        call setup_ancil_field("lake_g_dt_gb", depository, &
+                               fd_field_collection, mesh, twod_mesh, &
+                               twod=.true.)
+      end if
     end if
 
     ! Dust fields

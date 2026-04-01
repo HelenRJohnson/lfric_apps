@@ -58,7 +58,10 @@ use lfricinp_stashmaster_mod, only: &
     stashcode_can_water_tile, stashcode_rgrain, stashcode_tstar_tile,         &
     stashcode_snow_tile, stashcode_snow_grnd, stashcode_area_cf,              &
     stashcode_bulk_cf, stashcode_liquid_cf, stashcode_frozen_cf, stashcode_zw,&
-    stashcode_fsat, stashcode_fwetl, stashcode_sthzw,                         &
+    stashcode_fsat, stashcode_fwetl, stashcode_sthzw, stashcode_flake_depth,  &
+    stashcode_flake_fetch, stashcode_flake_t_mean, stashcode_flake_t_mxl,     &
+    stashcode_flake_t_ice, stashcode_flake_h_mxl, stashcode_flake_h_ice,      &
+    stashcode_flake_shape, stashcode_flake_g_over_dt,                         &
     stashcode_snowdep_grd_tile, stashcode_snowpack_bk_dens,                   &
     stashcode_nsnow_layrs_tiles, stashcode_snow_laythk_tiles,                 &
     stashcode_snow_ice_tile, stashcode_snow_liq_tile, stashcode_snow_T_tile,  &
@@ -169,6 +172,15 @@ call map_field_name(stashcode_zw, 'water_table')                     ! stash 278
 call map_field_name(stashcode_fsat, 'soil_sat_frac')                 ! stash 279
 call map_field_name(stashcode_fwetl, 'soil_wet_frac')                ! stash 280
 call map_field_name(stashcode_sthzw, 'wetness_under_soil')           ! stash 281
+call map_field_name(stashcode_flake_depth, 'lake_depth_gb')          ! stash 291
+call map_field_name(stashcode_flake_fetch, 'lake_fetch_gb')          ! stash 292
+call map_field_name(stashcode_flake_t_mean, 'lake_t_mean_gb')        ! stash 293
+call map_field_name(stashcode_flake_t_mxl, 'lake_t_mxl_gb')          ! stash 294
+call map_field_name(stashcode_flake_t_ice, 'lake_t_ice_gb')          ! stash 295
+call map_field_name(stashcode_flake_h_mxl, 'lake_h_mxl_gb')          ! stash 296
+call map_field_name(stashcode_flake_h_ice, 'lake_h_ice_gb')          ! stash 297
+call map_field_name(stashcode_flake_shape, 'lake_shape_factor_gb')   ! stash 298
+call map_field_name(stashcode_flake_g_over_dt, 'lake_g_dt_gb')       ! stash 299
 call map_field_name(stashcode_snowdep_grd_tile, 'tile_snow_depth')   ! stash 376
 call map_field_name(stashcode_snowpack_bk_dens, 'tile_snowpack_density')
                                                                      ! stash 377

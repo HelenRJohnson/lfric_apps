@@ -178,6 +178,14 @@ contains
     type( field_type ), pointer :: urbhgt
     type( field_type ), pointer :: urbztm
     type( field_type ), pointer :: urbdisp
+    type( field_type ), pointer :: lake_t_mxl_gb
+    type( field_type ), pointer :: lake_t_ice_gb
+    type( field_type ), pointer :: lake_h_ice_gb
+    type( field_type ), pointer :: lake_g_dt_gb
+    type( field_type ), pointer :: lake_depth_gb
+    type( field_type ), pointer :: hcon_lake
+    type( field_type ), pointer :: ts1_lake_gb
+    type( field_type ), pointer :: non_lake_frac
     type( integer_field_type ), pointer :: ocn_cpl_point
 
     type( field_type ), pointer :: peak_to_trough_orog
@@ -332,6 +340,14 @@ contains
     call surface_fields%get_field('sea_u_current',sea_u_current_ptr)
     call surface_fields%get_field('sea_v_current',sea_v_current_ptr)
     call surface_fields%get_field('ocn_cpl_point', ocn_cpl_point)
+    call surface_fields%get_field('lake_t_mxl_gb', lake_t_mxl_gb)
+    call surface_fields%get_field('lake_t_ice_gb', lake_t_ice_gb)
+    call surface_fields%get_field('lake_h_ice_gb', lake_h_ice_gb)
+    call surface_fields%get_field('lake_g_dt_gb', lake_g_dt_gb)
+    call surface_fields%get_field('lake_depth_gb', lake_depth_gb)
+    call surface_fields%get_field('hcon_lake', hcon_lake)
+    call surface_fields%get_field('ts1_lake_gb', ts1_lake_gb)
+    call surface_fields%get_field('non_lake_frac', non_lake_frac)
 
 
     ! Soil fields
@@ -450,7 +466,9 @@ contains
                                rhostar, recip_l_mo_sea,                        &
                                h_blend_orog, t1_sd_2d, q1_sd_2d,               &
                                gross_prim_prod, z0h_eff, ocn_cpl_point,        &
-                               stencil_depth)
+                               stencil_depth, lake_t_mxl_gb, lake_t_ice_gb,    &
+                               lake_h_ice_gb, lake_g_dt_gb, lake_depth_gb,     &
+                               hcon_lake, ts1_lake_gb, non_lake_frac )
 
     ! Switch UM back to columns
     call um_sizes_init(1_i_def)

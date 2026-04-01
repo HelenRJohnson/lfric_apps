@@ -53,7 +53,8 @@ module init_ancils_mod
                                              easyaerosol_lw,            &
                                              murk_prognostic
   use socrates_init_mod,              only : n_sw_band, n_lw_band
-  use jules_surface_config_mod,       only : l_vary_z0m_soil, l_urban2t
+  use jules_surface_config_mod,       only : l_vary_z0m_soil, l_urban2t, &
+                                             l_flake_model
   use jules_sea_seaice_config_mod,    only : amip_ice_thick
   use jules_radiation_config_mod,     only : l_sea_alb_var_chl, l_albedo_obs
   use radiation_config_mod,           only : topography, topography_slope, &
@@ -210,7 +211,13 @@ contains
                                 mesh, twod_mesh, twod=.true.)
       call setup_ancil_field("urbhgt", depository, ancil_fields, &
                                 mesh, twod_mesh, twod=.true.)
-    endif
+   endif
+
+   if ( l_flake_model .and. (init_option == init_option_fd_start_dump .and. &
+         .not. checkpoint_read) ) then
+      call setup_ancil_field("lake_depth_gb", depository, ancil_fields, &
+                                mesh, twod_mesh, twod=.true.)
+   endif
 
     !=====  SEA ANCILS  =====
     if ( l_sea_alb_var_chl ) then

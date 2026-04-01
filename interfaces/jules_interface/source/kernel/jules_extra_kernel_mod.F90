@@ -32,7 +32,7 @@ module jules_extra_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_extra_kernel_type
     private
-    type(arg_type) :: meta_args(58) = (/                                       &
+    type(arg_type) :: meta_args(70) = (/                                       &
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! conv_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_snow
@@ -90,7 +90,19 @@ module jules_extra_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1), & ! sub_surface_runoff
          arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1), & ! soil_moisture_content
          arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1), & ! grid_snow_mass
-         arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2)  & ! throughfall
+         arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2), & ! throughfall
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_mxl_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_mean_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_ice_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_h_mxl_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_h_ice_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_shape_factor_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_g_dT_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! lake_depth_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! non_lake_frac
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! surf_ht_flux_lake
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! hcon_lake
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1)  & ! ts1_lake_gb
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -166,6 +178,18 @@ contains
   !> @param[in,out] soil_moisture_content  Soil moisture content of soil column
   !> @param[in,out] grid_snow_mass         Gridbox total snow mass (canopy + under canopy)
   !> @param[in,out] throughfall            Throughfall from land tiles
+  !> @param[in,out] lake_t_mxl_gb          FLake mixed layer temperature (K)
+  !> @param[in,out] lake_t_mean_gb         FLake mean temperature (K)
+  !> @param[in,out] lake_t_ice_gb          FLake ice surface temperature (K)
+  !> @param[in,out] lake_h_mxl_gb          FLake mixed layer thickness (m)
+  !> @param[in,out] lake_h_ice_gb          FLake ice thickness (m)
+  !> @param[in,out] lake_shape_factor_gb   FLake shape factor
+  !> @param[in,out] lake_g_dt_gb           FLake ground heat flux over delta T (W m-2 K-1)
+  !> @param[in]     lake_depth_gb          FLake lake depth (m)
+  !> @param[in]     non_lake_frac          FLake Non-lake fraction of gridbox
+  !> @param[in]     surf_ht_flux_lake      FLake downward heat flux at surface over lake
+  !> @param[in]     hcon_lake              FLake thermal conductivity of the lake-ice/lake/soil sandwich (W/m/K)
+  !> @param[in]     ts1_lake_gb            FLake average temperature of lake-ice/lake/soil sandwich (K)
   !> @param[in]     ndf_2d                 Total DOFs per cell for 2D fields
   !> @param[in]     undf_2d                Unique DOFs per cell for 2D fields
   !> @param[in]     map_2d                 DOFmap for cells for 2D fields
@@ -241,6 +265,18 @@ contains
                soil_moisture_content,      &
                grid_snow_mass,             &
                throughfall,                &
+               lake_t_mxl_gb,              &
+               lake_t_mean_gb,             &
+               lake_t_ice_gb,              &
+               lake_h_mxl_gb,              &
+               lake_h_ice_gb,              &
+               lake_shape_factor_gb,       &
+               lake_g_dt_gb,               &
+               lake_depth_gb,              &
+               non_lake_frac,              &
+               surf_ht_flux_lake,          &
+               hcon_lake,                  &
+               ts1_lake_gb,                &
                ndf_2d,                     &
                undf_2d,                    &
                map_2d,                     &
@@ -451,6 +487,20 @@ contains
     real(kind=r_def), pointer, intent(inout) :: soil_moisture_content(:)
     real(kind=r_def), pointer, intent(inout) :: grid_snow_mass(:)
     real(kind=r_def), pointer, intent(inout) :: throughfall(:)
+
+    real(kind=r_def), intent(inout) :: lake_t_mxl_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_t_mean_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_t_ice_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_h_mxl_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_h_ice_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_shape_factor_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_g_dt_gb(undf_2d)
+    
+    real(kind=r_def), intent(in) :: lake_depth_gb(undf_2d)
+    real(kind=r_def), intent(in) :: non_lake_frac(undf_2d)
+    real(kind=r_def), intent(in) :: surf_ht_flux_lake(undf_2d)
+    real(kind=r_def), intent(in) :: hcon_lake(undf_2d)
+    real(kind=r_def), intent(in) :: ts1_lake_gb(undf_2d)
 
     ! Local variables for the kernel
     integer(kind=i_def) :: i, j, n, i_snow, m, l
@@ -911,6 +961,26 @@ contains
       sthzw_soilt(l,1) = real(wetness_under_soil(map_2d(1,ainfo%land_index(l))), r_um)
     end do
 
+    ! FLake:
+    if ( l_flake_model ) then 
+      do l = 1, land_pts
+        lake_vars%lake_t_mxl_gb(l) = real(lake_t_mxl_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_t_mean_gb(l) = real(lake_t_mean_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_t_ice_gb(l) = real(lake_t_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_h_mxl_gb(l) = real(lake_h_mxl_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_h_ice_gb(l) = real(lake_h_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_shape_factor_gb(l) = real(lake_shape_factor_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%G_DT_gb(l) = real(lake_g_dt_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_depth_gb(l) = real(lake_depth_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%hcon_lake(l) = real(hcon_lake(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%ts1_lake_gb(l) = real(ts1_lake_gb(map_2d(1,ainfo%land_index(l))), r_um)
+      end do
+      do i = 1, seg_len
+        lake_vars%surf_ht_flux_lake_ij(i,1) = real(surf_ht_flux_lake(map_2d(1,i)), r_um)
+      end do
+    end if
+
   !----------------------------------------------------------------------------
   ! Call to surf_couple_extra using JULESvn5.4 standalone variable names
 
@@ -1053,6 +1123,19 @@ contains
       sub_surface_runoff(map_2d(1,ainfo%land_index(l))) = real(fluxes%sub_surf_roff_gb(l), r_def)
     end do
 
+    if ( l_flake_model ) then
+       do l = 1, land_pts
+          ! FLake prognostics
+          lake_t_mxl_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_mxl_gb(l), r_def)
+          lake_t_mean_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_mean_gb(l), r_def)
+          lake_t_ice_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_ice_gb(l), r_def)
+          lake_h_mxl_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_h_mxl_gb(l), r_def)
+          lake_h_ice_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_h_ice_gb(l), r_def)
+          lake_shape_factor_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_shape_factor_gb(l), r_def)
+          lake_g_dt_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%G_DT_gb(l), r_def)
+       end do
+    end if
+    
     if (.not. associated(soil_moisture_content, empty_real_data) ) then
       do l = 1, land_pts
         soil_moisture_content(map_2d(1,ainfo%land_index(l))) = progs%smc_soilt(l,1)

@@ -239,6 +239,7 @@ contains
     type( field_type ) :: canopy_evap
     type( field_type ) :: water_extraction
     type( field_type ) :: lake_evap
+    type( field_type ) :: surf_ht_flux_lake
     real(r_def) :: dt
 
     type( field_type ), pointer :: zh             => null()
@@ -308,20 +309,21 @@ contains
       call invoke(setval_c(dtl1, 0.0_r_def) )
 
       call jules_imp_alg(mr, surf_heat_flux, canopy_evap, water_extraction,   &
-                         lake_evap, derived_fields, radiation_fields,         &
-                         turbulence_fields, cloud_fields, surface_fields,     &
-                         soil_fields, snow_fields, outer, model_clock, loop,  &
-                         qw, tl, dqw1, dtl1, ct_ctq1, ftl, fqw, rhokh,        &
-                         mr_ice, latent_heat, t1p5m, q1p5m, qcl1p5m,          &
-                         t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi, t1p5m_land,       &
-                         q1p5m_land, qcl1p5m_land)
+                         lake_evap, surf_ht_flux_lake, derived_fields,        &
+                         radiation_fields, turbulence_fields, cloud_fields,   &
+                         surface_fields, soil_fields, snow_fields, outer,     &
+                         model_clock, loop, qw, tl, dqw1, dtl1, ct_ctq1, ftl, &
+                         fqw, rhokh, mr_ice, latent_heat, t1p5m, q1p5m,       &
+                         qcl1p5m, t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi,          &
+                         t1p5m_land, q1p5m_land, qcl1p5m_land)
 
     end do !loop
 
     call jules_extra_alg(microphysics_fields, convection_fields,        &
                          surface_fields, soil_fields, snow_fields,      &
                          surf_heat_flux, canopy_evap,                   &
-                         water_extraction, lake_evap, dt)
+                         water_extraction, lake_evap, surf_ht_flux_lake,&
+                         dt)
 
 end subroutine run_step
 

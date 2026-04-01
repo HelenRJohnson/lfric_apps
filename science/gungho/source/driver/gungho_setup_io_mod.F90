@@ -100,7 +100,8 @@ module gungho_setup_io_mod
                                        ls_filename,               &
                                        ls_directory,              &
                                        coarse_ancil_directory,    &
-                                       internal_flux_ancil_path
+                                       internal_flux_ancil_path,  &
+                                       flake_ancil_path
   use initialization_config_mod, only: init_option,               &
                                        init_option_fd_start_dump, &
                                        init_option_checkpoint_dump,&
@@ -141,7 +142,8 @@ module gungho_setup_io_mod
   use derived_config_mod,        only: l_couple_sea_ice
   use lfric_string_mod,          only: split_string
 #ifdef UM_PHYSICS
-  use jules_surface_config_mod,  only: l_vary_z0m_soil, l_urban2t
+  use jules_surface_config_mod,  only: l_vary_z0m_soil, l_urban2t,&
+                                       l_flake_model
   use specified_surface_config_mod, only: internal_flux_method, &
                                        internal_flux_method_non_uniform, &
                                        surf_temp_forcing, &
@@ -304,6 +306,14 @@ module gungho_setup_io_mod
                                                            io_mode=FILE_MODE_READ ) )
         end if
 
+        if (l_flake_model) then
+           write (ancil_fname,'(A)') trim(ancil_directory)//'/'// &
+                                     trim(flake_ancil_path)
+           call files_list%insert_item( lfric_xios_file_type( ancil_fname,        &
+                                                           xios_id="flake_ancil", &
+                                                           io_mode=FILE_MODE_READ ) )
+        end if
+        
         ! Set soil ancil filename from namelist
         write(ancil_fname,'(A)') trim(ancil_directory)//'/'// &
                                  trim(soil_ancil_path)

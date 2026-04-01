@@ -99,6 +99,7 @@ module jules_physics_init_mod
                               anthrop_heat_option_flanner,                     &
                               anthrop_heat_mean_in => anthrop_heat_mean,       &
                               l_anthrop_heat_src_in => l_anthrop_heat_src,     &
+                              l_flake_model_in => l_flake_model,               &
                               l_urban2t_in => l_urban2t,                       &
                               l_vary_z0m_soil_in => l_vary_z0m_soil
   use jules_vegetation_config_mod, only :                                      &
@@ -222,7 +223,7 @@ contains
          i_modiscopt, l_land_ice_imp, no_drag, effective_z0,                &
          capped_lowhill, explicit_stress, l_anthrop_heat_src, l_urban2t,    &
          l_vary_z0m_soil, l_mo_buoyancy_calc, anthrop_heat_option, dukes,   &
-         flanner, anthrop_heat_mean
+         flanner, anthrop_heat_mean, l_flake_model
     use jules_rivers_mod, only: lake_water_conserve_method, use_elake_surft
     use jules_urban_mod, only: anthrop_heat_scale, l_moruses_albedo,        &
          l_moruses_emissivity, l_moruses_rough, l_moruses_storage,          &
@@ -508,6 +509,7 @@ contains
     l_land_ice_imp     = .true.
     l_mo_buoyancy_calc = .true.
     l_anthrop_heat_src = l_anthrop_heat_src_in
+    l_flake_model      = l_flake_model_in
     l_urban2t          = l_urban2t_in
     l_vary_z0m_soil    = l_vary_z0m_soil_in
     orog_drag_param    = 0.15_r_um

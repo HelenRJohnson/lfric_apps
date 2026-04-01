@@ -63,6 +63,7 @@ contains
   !>@param[out]    canopy_evap       Canopy evaporation from land tiles
   !>@param[out]    water_extraction  Extraction of water from each soil layer
   !>@param[out]    lake_evap         Evaporation from lakes GBM
+  !>@param[out]    surf_ht_flux_lake Net downward heat flux over lake
   !>@param[out]    theta_star_surf   Atmospheric stability via heat flux
   !>@param[out]    qv_star_surf      Atmospheric stability via moist flux
   !>@param[in]     theta             Theta in its native (wth) space
@@ -83,8 +84,8 @@ contains
   !>@param[in]     clock             The clock object
   subroutine bl_imp_alg(dtheta_bl, du_bl, mr,                            &
                         surf_heat_flux, canopy_evap, water_extraction,   &
-                        lake_evap, theta_star_surf, qv_star_surf,        &
-                        theta, exner, mr_n, rho,                         &
+                        lake_evap, surf_ht_flux_lake, theta_star_surf,   &
+                        qv_star_surf, theta, exner, mr_n, rho,           &
                         derived_fields, radiation_fields,                &
                         orography_fields, turbulence_fields,             &
                         convection_fields, cloud_fields, surface_fields, &
@@ -102,6 +103,7 @@ contains
     type( field_type ), intent( inout )     :: dtheta_bl, du_bl, mr(nummr)
     type( field_type ), intent( out )       :: surf_heat_flux, canopy_evap,   &
                                                water_extraction, lake_evap,   &
+                                               surf_ht_flux_lake,             &
                                                theta_star_surf, qv_star_surf
     type( field_type ), intent( in )        :: theta, exner, rho, mr_n(nummr)
 
@@ -425,13 +427,13 @@ contains
                                       dqw_nt, dtl_nt, qw, tl, ct_ctq,          &
                                       dqw1, dtl1, ct_ctq1 ) )
       call jules_imp_alg( mr, surf_heat_flux, canopy_evap, water_extraction,   &
-                          lake_evap, derived_fields, radiation_fields,         &
-                          turbulence_fields, cloud_fields, surface_fields,     &
-                          soil_fields, snow_fields, outer, model_clock, loop,  &
-                          qw, tl, dqw1, dtl1, ct_ctq1, ftl, fqw, rhokh,        &
-                          mr_ice, latent_heat, t1p5m, q1p5m, qcl1p5m,          &
-                          t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi, t1p5m_land,       &
-                          q1p5m_land, qcl1p5m_land)
+                          lake_evap, surf_ht_flux_lake, derived_fields,        &
+                          radiation_fields, turbulence_fields, cloud_fields,   &
+                          surface_fields, soil_fields, snow_fields, outer,     &
+                          model_clock, loop,  qw, tl, dqw1, dtl1, ct_ctq1, ftl,&
+                          fqw, rhokh,  mr_ice, latent_heat, t1p5m, q1p5m,      &
+                          qcl1p5m, t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi,          &
+                          t1p5m_land, q1p5m_land, qcl1p5m_land)
       call invoke(bl_imp2_kernel_type( outer, loop, wetrho_in_wth, exner,      &
                                        exner_in_wth, theta_star, height_w3,    &
                                        height_wth, ntml, cumulus, dtheta_bl,   &

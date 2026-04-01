@@ -70,7 +70,7 @@ module create_physics_prognostics_mod
   use multires_coupling_config_mod,   only : coarse_rad_aerosol
 
   use jules_surface_config_mod,       only : srf_ex_cnv_gust, l_vary_z0m_soil, &
-                                             l_urban2t
+                                             l_urban2t, l_flake_model
   use jules_radiation_config_mod,     only : l_albedo_obs, l_sea_alb_var_chl
   use specified_surface_config_mod,   only : surf_temp_forcing, &
                                              surf_temp_forcing_int_flux
@@ -936,6 +936,32 @@ contains
         ckp=(surf_temp_forcing == surf_temp_forcing_int_flux), &
         empty = (surf_temp_forcing /= surf_temp_forcing_int_flux) ))
 
+    ! 2D fields, need checkpointing for FLake
+    call processor%apply(make_spec('lake_t_mxl_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_t_mean_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_t_ice_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_h_mxl_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_h_ice_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_shape_factor_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_g_dt_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_depth_gb', main%surface, &
+         twod=.true., ckp=l_flake_model, empty=(.not. l_flake_model)))
+
+    ! 2D fields for FLake, don't need checkpointing
+    call processor%apply(make_spec('hcon_lake', main%surface, W3, &
+         twod=.true., empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('ts1_lake_gb', main%surface, W3, &
+         twod=.true., empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('non_lake_frac', main%surface, W3, &
+         twod=.true., empty=(.not. l_flake_model)))
+    
     ! Space for variables required for regridding to cell faces
     ! vector_space => function_space_collection%get_fs(twod_mesh, 0, 0, W2,
     !     get_ndata_val('surface_regrid_vars'))

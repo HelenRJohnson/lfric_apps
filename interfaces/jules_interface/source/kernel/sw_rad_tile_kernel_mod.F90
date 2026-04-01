@@ -36,7 +36,7 @@ CHARACTER(LEN=*), PARAMETER, PRIVATE :: ModuleName='SW_RAD_TILE_KERNEL_MOD'
 ! Contains the metadata needed by the PSy layer.
 type, extends(kernel_type) :: sw_rad_tile_kernel_type
   private
-  type(arg_type) :: meta_args(33) = (/                                &
+  type(arg_type) :: meta_args(34) = (/                                &
     arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! tile_sw_direct_albedo
     arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! tile_sw_diffuse_albedo
     arg_type(GH_FIELD, GH_REAL, GH_READ,  ANY_DISCONTINUOUS_SPACE_2), & ! tile_fraction
@@ -69,6 +69,7 @@ type, extends(kernel_type) :: sw_rad_tile_kernel_type
     arg_type(GH_FIELD, GH_REAL, GH_READ,  ANY_DISCONTINUOUS_SPACE_1), & ! urbztm
     arg_type(GH_FIELD, GH_REAL, GH_READ,  ANY_DISCONTINUOUS_SPACE_1), & ! urbalbwl
     arg_type(GH_FIELD, GH_REAL, GH_READ,  ANY_DISCONTINUOUS_SPACE_1), & ! urbalbrd
+    arg_type(GH_FIELD, GH_REAL, GH_READ,  ANY_DISCONTINUOUS_SPACE_1), & ! lake_h_ice_gb
     arg_type(GH_SCALAR, GH_INTEGER, GH_READ)                          & ! n_band
     /)
   integer :: operates_on = DOMAIN
@@ -115,6 +116,7 @@ contains
 !> @param[in]     urbztm                 Urban effective roughness length
 !> @param[in]     urbalbwl               Urban wall albedo
 !> @param[in]     urbalbrd               Urban road albedo
+!> @param[in]     lake_h_ice_gb          FLake ice thickness (m)
 !> @param[in]     n_band                 Number of spectral bands
 !> @param[in]     ndf_sw_tile            DOFs per cell for tiles and sw bands
 !> @param[in]     undf_sw_tile           Total DOFs for tiles and sw bands
@@ -173,6 +175,7 @@ subroutine sw_rad_tile_code(nlayers, seg_len,                       &
                             urbztm,                                 &
                             urbalbwl,                               &
                             urbalbrd,                               &
+                            lake_h_ice_gb,                          &
                             n_band,                                 &
                             ndf_sw_tile, undf_sw_tile, map_sw_tile, &
                             ndf_tile, undf_tile, map_tile,          &
@@ -292,6 +295,7 @@ subroutine sw_rad_tile_code(nlayers, seg_len,                       &
   real(r_def), intent(in)    :: urbztm(undf_2d)
   real(r_def), intent(in)    :: urbalbwl(undf_2d)
   real(r_def), intent(in)    :: urbalbrd(undf_2d)
+  real(r_def), intent(in)    :: lake_h_ice_gb(undf_2d)
 
   real(r_def), intent(in)    :: sea_ice_thickness(undf_sice)
   real(r_def), intent(in)    :: melt_pond_fraction(undf_sice)
@@ -562,6 +566,13 @@ subroutine sw_rad_tile_code(nlayers, seg_len,                       &
     psparms%catch_snow_surft, psparms%catch_surft, psparms%z0_surft,       &
     psparms%z0h_bare_surft, urban_param%ztm_gb)
 
+  if ( l_flake_model ) then
+    ! Lake ice thickness
+    do l = 1, land_field
+      lake_vars%lake_h_ice_gb(l) = real(lake_h_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
+    end do
+  end if
+  
   ! Snow-free soil albedo
   do l = 1, land_field
     psparms%albsoil_soilt(l,1) = real(soil_albedo(map_2d(1,ainfo%land_index(l))), r_um)

@@ -46,7 +46,7 @@ module jules_exp_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_exp_kernel_type
     private
-    type(arg_type) :: meta_args(109) = (/                                      &
+    type(arg_type) :: meta_args(117) = (/                                      &
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! theta_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! exner_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      W3, STENCIL(REGION)),      &! u_in_w3
@@ -155,7 +155,15 @@ module jules_exp_kernel_mod
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! q1_sd
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! diag__gross_prim_prod
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! diag__z0h_eff
-         arg_type(GH_FIELD, GH_INTEGER, GH_READ,    ANY_DISCONTINUOUS_SPACE_1) &! ocn_cpl_point
+         arg_type(GH_FIELD, GH_INTEGER, GH_READ,    ANY_DISCONTINUOUS_SPACE_1),&! ocn_cpl_point
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake mixed layer temp
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake ice temperature
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake ice thickness
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake g_dt_gb
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake depth
+         arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! hcon_lake
+         arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! ts1_lake_gb
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1) &! non_lake_frac
          /)
     integer :: operates_on = DOMAIN
   contains
@@ -271,6 +279,14 @@ contains
   !> @param[in]     urbhgt                 Urban building height
   !> @param[in]     urbztm                 Urban effective roughness length
   !> @param[in]     urbdisp                Urban displacement height
+  !> @param[in]     lake_t_mxl_gb          FLake mixed layer temperature (K)
+  !> @param[in]     lake_t_ice_gb          FLake ice surface temperature (K)
+  !> @param[in]     lake_h_ice_gb          FLake ice thickness (m)
+  !> @param[in]     lake_g_dt_gb           FLake ground heat flux over delta T (W m-2 K-1)
+  !> @param[in]     lake_depth_gb          FLake lake depth (m)
+  !> @param[in,out] hcon_lake              thermal conductivity of the lake-ice, lake and soil sandwich (W/m/K)
+  !> @param[in,out] ts1_lake_gb            average temperature of the lake-ice, lake and soil sandwich (K)
+  !> @param[in]     non_lake_frac          FLake non-lake fraction of the gridbox
   !> @param[in,out] rhostar_2d             Surface density
   !> @param[in,out] recip_l_mo_sea_2d      Inverse Obukhov length over sea only
   !> @param[in,out] h_blend_orog_2d        Orographic blending height
@@ -422,6 +438,14 @@ contains
                            urbhgt,                                &
                            urbztm,                                &
                            urbdisp,                               &
+                           lake_t_mxl_gb,                         &
+                           lake_t_ice_gb,                         &
+                           lake_h_ice_gb,                         &
+                           lake_g_dt_gb,                          &
+                           lake_depth_gb,                         &
+                           hcon_lake,                             &
+                           ts1_lake_gb,                           &
+                           non_lake_frac,                         &
                            rhostar_2d,                            &
                            recip_l_mo_sea_2d,                     &
                            h_blend_orog_2d,                       &
@@ -661,6 +685,15 @@ contains
     real(kind=r_def), intent(in) :: urbhgt(undf_2d)
     real(kind=r_def), intent(in) :: urbztm(undf_2d)
     real(kind=r_def), intent(in) :: urbdisp(undf_2d)
+
+    real(kind=r_def), intent(in) :: lake_t_mxl_gb(undf_2d)
+    real(kind=r_def), intent(in) :: lake_t_ice_gb(undf_2d)
+    real(kind=r_def), intent(in) :: lake_h_ice_gb(undf_2d)
+    real(kind=r_def), intent(in) :: lake_g_dt_gb(undf_2d)
+    real(kind=r_def), intent(in) :: lake_depth_gb(undf_2d)
+    real(kind=r_def), intent(in) :: non_lake_frac(undf_2d)
+    real(kind=r_def), intent(inout) :: hcon_lake(undf_2d)
+    real(kind=r_def), intent(inout) :: ts1_lake_gb(undf_2d)
 
     real(kind=r_def), intent(in) :: soil_moist_wilt(undf_2d)
     real(kind=r_def), intent(in) :: soil_moist_crit(undf_2d)
@@ -1159,6 +1192,19 @@ contains
         urban_param%hgt_gb(l)   = real(urbhgt(map_2d(1,ainfo%land_index(l))), r_um)
         urban_param%ztm_gb(l)   = real(urbztm(map_2d(1,ainfo%land_index(l))), r_um)
         urban_param%disp_gb(l)  = real(urbdisp(map_2d(1,ainfo%land_index(l))), r_um)
+      end do
+    end if
+
+    if ( l_flake_model ) then
+      do l = 1, land_field
+        lake_vars%lake_t_mxl_gb(l) = real(lake_t_mxl_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_t_ice_gb(l) = real(lake_t_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_h_ice_gb(l) = real(lake_h_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%g_dt_gb(l)  = real(lake_g_dt_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_depth_gb(l) = real(lake_depth_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%hcon_lake(l)     = real(hcon_lake(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%ts1_lake_gb(l)   = real(ts1_lake_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
       end do
     end if
 
@@ -1833,6 +1879,14 @@ contains
       surface_conductance(map_2d(1,ainfo%land_index(l))) = real(progs%gs_gb(l), r_def)
       thermal_cond_wet_soil(map_2d(1,ainfo%land_index(l))) = hcons_soilt(l)
     end do
+
+    ! write FLake fields needed to calculate fluxes at snow/lake-ice interface
+    if ( l_flake_model ) then
+      do l = 1, land_field
+        hcon_lake(map_2d(1,ainfo%land_index(l))) = real(lake_vars%hcon_lake(l), r_def)
+        ts1_lake_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%ts1_lake_gb(l), r_def)
+      end do
+    end if
 
     if (.not. associated(soil_respiration, empty_real_data) ) then
       if (dim_cs1 == 4) then

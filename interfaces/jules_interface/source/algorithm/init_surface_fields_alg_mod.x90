@@ -16,6 +16,7 @@ module init_surface_fields_alg_mod
 
   use initialization_config_mod, only: init_option, init_option_analytic, &
                                        ancil_option, ancil_option_none
+  use jules_surface_config_mod,  only: l_flake_model
   use specified_surface_config_mod, only: internal_flux_method, &
                                        internal_flux_method_uniform, &
                                        internal_flux_value, &
@@ -50,6 +51,7 @@ contains
 
     ! Ancillary fields
     type( field_type ), pointer :: chloro_sea          => null()
+    type( field_type ), pointer :: lake_depth_gb       => null()
     type( field_type ), pointer :: sea_ice_thickness   => null()
     type( field_type ), pointer :: sea_ice_temperature => null()
     type( field_type ), pointer :: urbwrr              => null()
@@ -66,6 +68,9 @@ contains
 
     ! Diagnostic fields
     type( field_type ), pointer :: tau_ssi_w2          => null()
+    type( field_type ), pointer :: hcon_lake           => null()
+    type( field_type ), pointer :: ts1_lake_gb         => null()
+    type( field_type ), pointer :: non_lake_frac       => null()
 
     ! Prognostic fields
     type( field_type ), pointer :: tile_fraction       => null()
@@ -81,6 +86,13 @@ contains
     type( field_type ), pointer :: gc_tile             => null()
     type( field_type ), pointer :: surface_conductance => null()
     type( field_type ), pointer :: canopy_water        => null()
+    type( field_type ), pointer :: lake_t_mxl_gb       => null()
+    type( field_type ), pointer :: lake_t_mean_gb      => null()
+    type( field_type ), pointer :: lake_t_ice_gb       => null()
+    type( field_type ), pointer :: lake_h_mxl_gb       => null()
+    type( field_type ), pointer :: lake_h_ice_gb       => null()
+    type( field_type ), pointer :: lake_shape_factor_gb => null()
+    type( field_type ), pointer :: lake_g_dt_gb        => null()
     type( field_type ), pointer :: snowice_sublimation
     type( field_type ), pointer :: snowice_melt
     type( field_type ), pointer :: z0m_tile
@@ -207,6 +219,31 @@ contains
 
     end if
 
+    if (l_flake_model) then
+       call surface_fields%get_field('lake_t_mxl_gb', lake_t_mxl_gb)
+       call surface_fields%get_field('lake_t_mean_gb', lake_t_mean_gb)
+       call surface_fields%get_field('lake_t_ice_gb', lake_t_ice_gb)
+       call surface_fields%get_field('lake_h_mxl_gb', lake_h_mxl_gb)
+       call surface_fields%get_field('lake_h_ice_gb', lake_h_ice_gb)
+       call surface_fields%get_field('lake_shape_factor_gb', lake_shape_factor_gb)
+       call surface_fields%get_field('lake_g_dt_gb', lake_g_dt_gb)
+       call surface_fields%get_field('lake_depth_gb', lake_depth_gb)
+       call surface_fields%get_field('hcon_lake', hcon_lake)
+       call surface_fields%get_field('ts1_lake_gb', ts1_lake_gb)
+       call surface_fields%get_field('non_lake_frac', non_lake_frac)
+       call invoke( setval_c(lake_t_mxl_gb, 277.0_r_def),                     &
+                    setval_c(lake_t_mean_gb, 277.0_r_def),                    &
+                    setval_c(lake_t_ice_gb, 270.0_r_def),                     &
+                    setval_c(lake_h_mxl_gb, 0.0_r_def),                       &
+                    setval_c(lake_h_ice_gb, 0.0_r_def),                       &
+                    setval_c(lake_shape_factor_gb, 0.5_r_def),                &
+                    setval_c(lake_g_dt_gb, 1.0e-10_r_def),                    &
+                    setval_c(lake_depth_gb, 5.0_r_def),                       &
+                    setval_c(hcon_lake, 0.56_r_def),                          &
+                    setval_c(ts1_lake_gb, 0.0_r_def),                         &
+                    setval_c(non_lake_frac, 1.0_r_def))
+    end if
+    
     if ( surf_temp_forcing == surf_temp_forcing_int_flux ) then
       call surface_fields%get_field('internal_flux', internal_flux)
       if ( internal_flux_method == internal_flux_method_uniform ) then

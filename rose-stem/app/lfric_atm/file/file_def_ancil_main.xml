@@ -42,6 +42,10 @@
     <field id="urbhgt" name="urbhgt" long_name="Urban building height" unit="1" operation="once" domain_ref="face"/>
   </file>
 
+  <file id="flake_ancil" name="flake_ancil" mode="read" output_freq="1ts" convention="UGRID" cyclic="false" enabled=".FALSE.">
+    <field id="lake_depth" name="lake_depth" long_name="Lake depth" unit="m" operation="once" domain_ref="face"/>
+  </file>
+
   <file id="plant_func_ancil" name="plant_func_ancil" mode="read" output_freq="1mo" convention="UGRID" cyclic="true" enabled=".FALSE.">
     <field id="plant_func_time" name="time" unit="hours" operation="once" axis_ref="monthly_climatology"/>
     <field id="canopy_height_data" name="canopy_height" long_name="canopy_height" unit="1" operation="once" grid_ref="pft_monthly_grid"/>

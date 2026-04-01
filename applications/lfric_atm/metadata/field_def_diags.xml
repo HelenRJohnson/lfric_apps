@@ -583,6 +583,14 @@
   <field id="surface__disp" name="urbdisp" long_name="Urban displacement height" unit="m" domain_ref="face" />
   <field id="surface__albwl" name="urbalbwl" long_name="Urban wall abedo" unit="1" domain_ref="face" />
   <field id="surface__albrd" name="urbalbrd" long_name="Urban road abedo" unit="1" domain_ref="face" />
+  <field id="surface__lake_t_mxl_gb" name="lake_t_mxl_gb" long_name="Lake mixed layer temperature" unit="K" domain_ref="face" />
+  <field id="surface__lake_t_mean_gb" name="lake_t_mean_gb" long_name="Lake mean temperature" unit="K" domain_ref="face" />
+  <field id="surface__lake_t_ice_gb" name="lake_t_ice_gb" long_name="Temperature at the upper boundary of the lake ice" unit="K" domain_ref="face" />
+  <field id="surface__lake_h_mxl_gb" name="lake_h_mxl_gb" long_name="Lake mixed-layer thickness" unit="m" domain_ref="face" />
+  <field id="surface__lake_h_ice_gb" name="lake_h_ice_gb" long_name="Lake ice thickness" unit="m" domain_ref="face" />
+  <field id="surface__lake_shape_factor_gb" name="lake_shape_factor_gb" long_name="Lake thermocline shape factor" unit="1" domain_ref="face" />
+  <field id="surface__lake_g_dt_gb" name="lake_g_dt_gb" long_name="ground heat flux over dT for lakes" unit="W m-2 K-1" domain_ref="face" />
+  <field id="surface__lake_depth_gb" name="lake_depth_gb" long_name="lake depth" unit="m" domain_ref="face" />
   <!-- GBM surface diagnostics derived from BL turbulence diagnostics -->
   <!-- First line extracts level 1, second line removes vertical coordinate, cannot do as one -->
   <field id="zoomed__sh" field_ref="turbulence__heat_flux_bl" grid_ref="half_level_1_face_zoom" />

@@ -38,7 +38,7 @@ module jules_imp_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_imp_kernel_type
     private
-    type(arg_type) :: meta_args(85) = (/                                          &
+    type(arg_type) :: meta_args(88) = (/                                          &
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! outer
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! loop
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! wetrho_in_w3
@@ -123,7 +123,10 @@ module jules_imp_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2),&! surf_radnet
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2),&! surf_lw_up
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2),&! surf_lw_down
-         arg_type(GH_FIELD,  GH_INTEGER, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1) &! ocn_cpl_point
+         arg_type(GH_FIELD,  GH_INTEGER, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! ocn_cpl_point
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake ice thickness
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! Non lake fraction
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1) &! surf_ht_flux_lake
          /)
 
     integer :: operates_on = DOMAIN
@@ -222,6 +225,9 @@ contains
   !> @param[in,out] surf_lw_up           Diagnostic: Upward surface longtwave radiation
   !> @param[in,out] surf_lw_down         Diagnostic: Downward surface longwave radiation
   !> @param[in,out] ocn_cpl_point        Diagnostic: Coupling point mask
+  !> @param[in,out] non_lake_frac        Diagnostic: Non lake fraction
+  !> @param[in,out] surf_ht_flux_lake    Diagnostic: Net downward heat flux at surface over lake fraction of gridbox
+  !> @param[in]     lake_h_ice_gb        Lake ice thickness
   !> @param[in]     ndf_wth              Number of DOFs per cell for potential temperature space
   !> @param[in]     undf_wth             Number of unique DOFs for potential temperature space
   !> @param[in]     map_wth              Dofmap for the cell at the base of the column for potential temperature space
@@ -318,6 +324,9 @@ contains
                             surf_sw_net, surf_radnet,           &
                             surf_lw_up, surf_lw_down,           &
                             ocn_cpl_point,                      &
+                            non_lake_frac,                      &
+                            surf_ht_flux_lake,                  &
+                            lake_h_ice_gb,                      &
                             ndf_w3,                             &
                             undf_w3,                            &
                             map_w3,                             &
@@ -495,6 +504,9 @@ contains
     real(kind=r_def), intent(in) :: dtl1_2d(undf_2d)
     real(kind=r_def), intent(in) :: ct_ctq1_2d(undf_2d)
     real(kind=r_def), intent(inout) :: surf_ht_flux(undf_tile)
+    real(kind=r_def), intent(inout) :: non_lake_frac(undf_2d)
+    real(kind=r_def), intent(inout) :: surf_ht_flux_lake(undf_2d)
+    real(kind=r_def), intent(in) :: lake_h_ice_gb(undf_2d)
     real(kind=r_def), pointer, intent(inout) :: t1p5m_surft(:)
     real(kind=r_def), pointer, intent(inout) :: q1p5m_surft(:)
     real(kind=r_def), pointer, intent(inout) :: t1p5m(:), q1p5m(:)
@@ -511,7 +523,6 @@ contains
     real(kind=r_def), pointer, intent(inout) :: surf_radnet(:)
     real(kind=r_def), pointer, intent(inout) :: surf_lw_up(:)
     real(kind=r_def), pointer, intent(inout) :: surf_lw_down(:)
-
     real(kind=r_def), intent(in) :: soil_temperature(undf_soil)
     real(kind=r_def), intent(inout):: water_extraction(undf_soil)
 
@@ -1005,6 +1016,17 @@ contains
         end if
       end do
 
+      ! FLake
+      if ( l_flake_model ) then 
+        do l = 1, land_field
+          lake_vars%lake_h_ice_gb(l) = real(lake_h_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
+          lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
+        end do
+        do i = 1, seg_len
+          lake_vars%surf_ht_flux_lake_ij(i,1) = real(surf_ht_flux_lake(map_2d(1,i)), r_um)
+        end do
+      end if
+      
       !-----------------------------------------------------------------------
       ! Assuming map_wth(1) points to level 0
       ! and map_w3(1) points to level 1
@@ -1371,6 +1393,17 @@ contains
           lake_evap(map_2d(1,ainfo%land_index(l))) = real(fluxes%lake_evap(l), r_def) * &
                                    tile_fraction(map_tile(1,ainfo%land_index(l))+lake-1)
         end do
+
+        ! output fields needed for FLake
+        if ( l_flake_model ) then
+          do l = 1, land_field
+            non_lake_frac(map_2d(1,ainfo%land_index(l))) = real(lake_vars%non_lake_frac(l), r_def)
+          end do
+          do i = 1, seg_len
+            surf_ht_flux_lake(map_2d(1,i)) = real(lake_vars%surf_ht_flux_lake_ij(i,1), r_def)
+          end do
+        end if
+        
 
         ! diagnostics
         if (.not. associated(snomlt_surf_htf, empty_real_data) ) then

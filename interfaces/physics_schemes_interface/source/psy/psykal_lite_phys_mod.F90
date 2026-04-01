@@ -338,7 +338,8 @@ sw_down_surf, lw_down_surf, sw_down_blue_surf, sw_direct_blue_surf, dd_mf_cb, oz
 &soil_moist_avail, snow_unload_rate, albedo_obs_scaling, soil_clay, soil_sand, dust_mrel, dust_flux, day_of_year, second_of_day, &
 flux_e, flux_h, urbwrr, urbhwr, urbhgt, urbztm, urbdisp, &
 &rhostar, recip_l_mo_sea, &
-&h_blend_orog, t1_sd_2d, q1_sd_2d, gross_prim_prod, z0h_eff, ocn_cpl_point, stencil_depth)
+&h_blend_orog, t1_sd_2d, q1_sd_2d, gross_prim_prod, z0h_eff, ocn_cpl_point, stencil_depth, lake_t_mxl_gb, lake_t_ice_gb, &
+&lake_h_ice_gb, lake_g_dt_gb, lake_depth_gb, hcon_lake, ts1_lake_gb, non_lake_frac )
       USE jules_exp_kernel_mod, ONLY: jules_exp_code
       USE mesh_mod, ONLY: mesh_type
       USE stencil_dofmap_mod, ONLY: STENCIL_REGION
@@ -359,7 +360,8 @@ skyview, sw_up_tile, tile_lw_grey_albedo,&
 &albedo_obs_scaling, soil_clay, soil_sand, dust_mrel, dust_flux, &
 urbwrr, urbhwr, urbhgt, urbztm, urbdisp, &
 rhostar, recip_l_mo_sea, h_blend_orog, t1_sd_2d, q1_sd_2d, &
-&gross_prim_prod, z0h_eff
+&gross_prim_prod, z0h_eff, lake_t_mxl_gb, lake_t_ice_gb, lake_h_ice_gb, lake_g_dt_gb, lake_depth_gb, hcon_lake, &
+&ts1_lake_gb, non_lake_frac
       TYPE(integer_field_type), intent(in) :: n_snow_layers, blend_height_tq, ocn_cpl_point
       INTEGER(KIND=i_def), intent(in) :: stencil_depth, ncells, ncells_halo, day_of_year, second_of_day
       REAL(KIND=r_def), intent(in) :: flux_e, flux_h
@@ -386,7 +388,8 @@ sw_down_surf_proxy, lw_down_surf_proxy, sw_down_blue_surf_proxy, sw_direct_blue_
 &soil_clay_proxy, soil_sand_proxy, dust_mrel_proxy, dust_flux_proxy, &
 urbwrr_proxy, urbhwr_proxy, urbhgt_proxy, urbztm_proxy, urbdisp_proxy, &
 rhostar_proxy, recip_l_mo_sea_proxy, h_blend_orog_proxy, &
-&t1_sd_2d_proxy, q1_sd_2d_proxy, gross_prim_prod_proxy, z0h_eff_proxy
+&t1_sd_2d_proxy, q1_sd_2d_proxy, gross_prim_prod_proxy, z0h_eff_proxy, lake_t_mxl_gb_proxy, lake_t_ice_gb_proxy, &
+&lake_h_ice_gb_proxy, lake_g_dt_gb_proxy, lake_depth_gb_proxy, hcon_lake_proxy, ts1_lake_gb_proxy, non_lake_frac_proxy
       INTEGER(KIND=i_def), pointer :: map_adspc10_dust_mrel(:,:) => null(), map_adspc1_zh(:,:) => null(), &
 &map_adspc2_tile_fraction(:,:) => null(), map_adspc3_leaf_area_index(:,:) => null(), &
 &map_adspc4_sea_ice_temperature(:,:) => null(), map_adspc5_snow_layer_thickness(:,:) => null(), &
@@ -521,6 +524,14 @@ rhostar_proxy, recip_l_mo_sea_proxy, h_blend_orog_proxy, &
       gross_prim_prod_proxy = gross_prim_prod%get_proxy()
       z0h_eff_proxy = z0h_eff%get_proxy()
       ocn_cpl_point_proxy = ocn_cpl_point%get_proxy()
+      lake_t_mxl_gb_proxy = lake_t_mxl_gb%get_proxy()
+      lake_t_ice_gb_proxy = lake_t_ice_gb%get_proxy()
+      lake_h_ice_gb_proxy = lake_h_ice_gb%get_proxy()
+      lake_g_dt_gb_proxy = lake_g_dt_gb%get_proxy()
+      lake_depth_gb_proxy = lake_depth_gb%get_proxy()
+      hcon_lake_proxy = hcon_lake%get_proxy()
+      ts1_lake_gb_proxy = ts1_lake_gb%get_proxy()
+      non_lake_frac_proxy = non_lake_frac%get_proxy()
       !
       ! Initialise number of layers
       !
@@ -671,7 +682,8 @@ sw_up_tile_proxy%data, tile_lw_grey_albedo_proxy%data, sw_down_surf_proxy%data, 
 &soil_sand_proxy%data, dust_mrel_proxy%data, dust_flux_proxy%data, day_of_year, second_of_day, &
 flux_e, flux_h, &
 urbwrr_proxy%data, urbhwr_proxy%data, urbhgt_proxy%data, urbztm_proxy%data, &
-urbdisp_proxy%data, &
+urbdisp_proxy%data, lake_t_mxl_gb_proxy%data, lake_t_ice_gb_proxy%data, lake_h_ice_gb_proxy%data, lake_g_dt_gb_proxy%data, &
+lake_depth_gb_proxy%data, hcon_lake_proxy%data, ts1_lake_gb_proxy%data, non_lake_frac_proxy%data, &
 rhostar_proxy%data, recip_l_mo_sea_proxy%data, &
 &h_blend_orog_proxy%data, t1_sd_2d_proxy%data, q1_sd_2d_proxy%data, gross_prim_prod_proxy%data, &
 z0h_eff_proxy%data, ocn_cpl_point_proxy%data, ndf_wtheta, &
@@ -721,6 +733,8 @@ z0h_eff_proxy%data, ocn_cpl_point_proxy%data, ndf_wtheta, &
       CALL soil_moist_avail_proxy%set_dirty()
       CALL snow_unload_rate_proxy%set_dirty()
       CALL dust_flux_proxy%set_dirty()
+      CALL hcon_lake_proxy%set_dirty()
+      CALL ts1_lake_gb_proxy%set_dirty()
       CALL rhostar_proxy%set_dirty()
       CALL recip_l_mo_sea_proxy%set_dirty()
       CALL h_blend_orog_proxy%set_dirty()
