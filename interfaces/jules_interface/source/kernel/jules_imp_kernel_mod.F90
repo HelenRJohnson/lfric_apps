@@ -225,9 +225,9 @@ contains
   !> @param[in,out] surf_lw_up           Diagnostic: Upward surface longtwave radiation
   !> @param[in,out] surf_lw_down         Diagnostic: Downward surface longwave radiation
   !> @param[in,out] ocn_cpl_point        Diagnostic: Coupling point mask
+  !> @param[in]     lake_h_ice_gb        Lake ice thickness
   !> @param[in,out] non_lake_frac        Diagnostic: Non lake fraction
   !> @param[in,out] surf_ht_flux_lake    Diagnostic: Net downward heat flux at surface over lake fraction of gridbox
-  !> @param[in]     lake_h_ice_gb        Lake ice thickness
   !> @param[in]     ndf_wth              Number of DOFs per cell for potential temperature space
   !> @param[in]     undf_wth             Number of unique DOFs for potential temperature space
   !> @param[in]     map_wth              Dofmap for the cell at the base of the column for potential temperature space
@@ -324,9 +324,9 @@ contains
                             surf_sw_net, surf_radnet,           &
                             surf_lw_up, surf_lw_down,           &
                             ocn_cpl_point,                      &
+                            lake_h_ice_gb,                      &
                             non_lake_frac,                      &
                             surf_ht_flux_lake,                  &
-                            lake_h_ice_gb,                      &
                             ndf_w3,                             &
                             undf_w3,                            &
                             map_w3,                             &
