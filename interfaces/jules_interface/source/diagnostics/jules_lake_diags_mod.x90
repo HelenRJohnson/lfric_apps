@@ -10,11 +10,11 @@ module jules_lake_diags_mod
   use field_mod,                 only: field_type
   use io_config_mod,             only: subroutine_timers
   use timer_mod,                 only: timer
-  
+
   implicit none
 
   private
-  
+
   public :: output_diags_for_jules_lake
 
 contains
@@ -30,16 +30,16 @@ contains
 
   subroutine output_diags_for_jules_lake(lake_t_mxl_gb, lake_t_mean_gb,        &
                                      lake_t_ice_gb, lake_h_mxl_gb,             &
-				     lake_h_ice_gb, lake_shape_factor_gb,      &
-				     lake_g_dt_gb)
+                                     lake_h_ice_gb, lake_shape_factor_gb,      &
+                                     lake_g_dt_gb)
 
     implicit none
 
     ! Prognostic fields to output
     type( field_type ), intent(in)    :: lake_t_mxl_gb, lake_t_mean_gb,        &
                                          lake_t_ice_gb, lake_h_mxl_gb,         &
-				         lake_h_ice_gb, lake_shape_factor_gb,  &
-				         lake_g_dt_gb
+                                         lake_h_ice_gb, lake_shape_factor_gb,  &
+                                         lake_g_dt_gb
 
     if ( subroutine_timers ) call timer("jules_lake_diags")
 

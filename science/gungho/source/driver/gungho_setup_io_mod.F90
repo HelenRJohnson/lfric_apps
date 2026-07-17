@@ -324,7 +324,7 @@ module gungho_setup_io_mod
                                                            xios_id="flake_ancil", &
                                                            io_mode=FILE_MODE_READ ) )
         end if
-        
+
         ! Set soil ancil filename from namelist
         write(ancil_fname,'(A)') trim(ancil_directory)//'/'// &
                                  trim(soil_ancil_path)

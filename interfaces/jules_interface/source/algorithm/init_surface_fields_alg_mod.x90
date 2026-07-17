@@ -243,7 +243,7 @@ contains
                     setval_c(ts1_lake_gb, 0.0_r_def),                         &
                     setval_c(non_lake_frac, 1.0_r_def))
     end if
-    
+
     if ( surf_temp_forcing == surf_temp_forcing_int_flux ) then
       call surface_fields%get_field('internal_flux', internal_flux)
       if ( internal_flux_method == internal_flux_method_uniform ) then

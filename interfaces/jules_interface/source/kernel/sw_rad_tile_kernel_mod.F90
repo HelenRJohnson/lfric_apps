@@ -572,7 +572,7 @@ subroutine sw_rad_tile_code(nlayers, seg_len,                       &
       lake_vars%lake_h_ice_gb(l) = real(lake_h_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
     end do
   end if
-  
+
   ! Snow-free soil albedo
   do l = 1, land_field
     psparms%albsoil_soilt(l,1) = real(soil_albedo(map_2d(1,ainfo%land_index(l))), r_um)
