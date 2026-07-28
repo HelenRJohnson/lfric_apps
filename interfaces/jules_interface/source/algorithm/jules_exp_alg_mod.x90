@@ -464,9 +464,9 @@ contains
                                rhostar, recip_l_mo_sea,                        &
                                t1_sd_2d, q1_sd_2d,                             &
                                gross_prim_prod, z0h_eff, ocn_cpl_point,        &
-                               stencil_depth, lake_t_mxl_gb, lake_t_ice_gb,    &
-                               lake_h_ice_gb, lake_g_dt_gb, lake_depth_gb,     &
-                               hcon_lake, ts1_lake_gb, non_lake_frac )
+                               lake_t_mxl_gb, lake_t_ice_gb, lake_h_ice_gb,    &
+                               lake_g_dt_gb, lake_depth_gb, hcon_lake,         &
+                               ts1_lake_gb, non_lake_frac, stencil_depth )
 
     ! Switch UM back to columns
     call um_sizes_init(1_i_def)
