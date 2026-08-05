@@ -278,6 +278,13 @@ contains
   !> @param[in]     urbhgt                 Urban building height
   !> @param[in]     urbztm                 Urban effective roughness length
   !> @param[in]     urbdisp                Urban displacement height
+  !> @param[in,out] rhostar_2d             Surface density
+  !> @param[in,out] recip_l_mo_sea_2d      Inverse Obukhov length over sea only
+  !> @param[in,out] t1_sd_2d               StDev of level 1 temperature
+  !> @param[in,out] q1_sd_2d               StDev of level 1 humidity
+  !> @param[in,out] gross_prim_prod        Diagnostic: Gross Primary Productivity
+  !> @param[in,out] z0h_eff                Diagnostic: Gridbox mean effective roughness length for scalars
+  !> @param[in,out] ocn_cpl_point          Diagnostic: Coupling point mask
   !> @param[in]     lake_t_mxl_gb          FLake mixed layer temperature (K)
   !> @param[in]     lake_t_ice_gb          FLake ice surface temperature (K)
   !> @param[in]     lake_h_ice_gb          FLake ice thickness (m)
@@ -286,13 +293,6 @@ contains
   !> @param[in,out] hcon_lake              thermal conductivity of the lake-ice, lake and soil sandwich (W/m/K)
   !> @param[in,out] ts1_lake_gb            average temperature of the lake-ice, lake and soil sandwich (K)
   !> @param[in]     non_lake_frac          FLake non-lake fraction of the gridbox
-  !> @param[in,out] rhostar_2d             Surface density
-  !> @param[in,out] recip_l_mo_sea_2d      Inverse Obukhov length over sea only
-  !> @param[in,out] t1_sd_2d               StDev of level 1 temperature
-  !> @param[in,out] q1_sd_2d               StDev of level 1 humidity
-  !> @param[in,out] gross_prim_prod        Diagnostic: Gross Primary Productivity
-  !> @param[in,out] z0h_eff                Diagnostic: Gridbox mean effective roughness length for scalars
-  !> @param[in,out] ocn_cpl_point          Diagnostic: Coupling point mask
   !> @param[in]     ndf_wth                Number of DOFs per cell for potential temperature space
   !> @param[in]     undf_wth               Number of unique DOFs for potential temperature space
   !> @param[in]     map_wth                Dofmap for the cell at the base of the column for potential temperature space
@@ -436,6 +436,13 @@ contains
                            urbhgt,                                &
                            urbztm,                                &
                            urbdisp,                               &
+                           rhostar_2d,                            &
+                           recip_l_mo_sea_2d,                     &
+                           t1_sd_2d,                              &
+                           q1_sd_2d,                              &
+                           gross_prim_prod,                       &
+                           z0h_eff,                               &
+                           ocn_cpl_point,                         &
                            lake_t_mxl_gb,                         &
                            lake_t_ice_gb,                         &
                            lake_h_ice_gb,                         &
@@ -444,13 +451,6 @@ contains
                            hcon_lake,                             &
                            ts1_lake_gb,                           &
                            non_lake_frac,                         &
-                           rhostar_2d,                            &
-                           recip_l_mo_sea_2d,                     &
-                           t1_sd_2d,                              &
-                           q1_sd_2d,                              &
-                           gross_prim_prod,                       &
-                           z0h_eff,                               &
-                           ocn_cpl_point,                         &
                            ndf_wth, undf_wth, map_wth,            &
                            ndf_w3, undf_w3, map_w3,               &
                            ndf_2d, undf_2d, map_2d,               &

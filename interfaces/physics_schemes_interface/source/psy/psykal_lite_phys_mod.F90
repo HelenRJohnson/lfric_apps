@@ -338,8 +338,8 @@ sw_down_surf, lw_down_surf, sw_down_blue_surf, sw_direct_blue_surf, dd_mf_cb, oz
 &soil_moist_avail, snow_unload_rate, albedo_obs_scaling, soil_clay, soil_sand, dust_mrel, dust_flux, day_of_year, second_of_day, &
 flux_e, flux_h, urbwrr, urbhwr, urbhgt, urbztm, urbdisp, &
 &rhostar, recip_l_mo_sea, &
-&t1_sd_2d, q1_sd_2d, gross_prim_prod, z0h_eff, ocn_cpl_point, stencil_depth, lake_t_mxl_gb, lake_t_ice_gb, &
-&lake_h_ice_gb, lake_g_dt_gb, lake_depth_gb, hcon_lake, ts1_lake_gb, non_lake_frac )
+&t1_sd_2d, q1_sd_2d, gross_prim_prod, z0h_eff, ocn_cpl_point, lake_t_mxl_gb, lake_t_ice_gb, &
+&lake_h_ice_gb, lake_g_dt_gb, lake_depth_gb, hcon_lake, ts1_lake_gb, non_lake_frac, stencil_depth )
       USE jules_exp_kernel_mod, ONLY: jules_exp_code
       USE mesh_mod, ONLY: mesh_type
       USE stencil_dofmap_mod, ONLY: STENCIL_REGION
@@ -681,11 +681,11 @@ sw_up_tile_proxy%data, tile_lw_grey_albedo_proxy%data, sw_down_surf_proxy%data, 
 &soil_sand_proxy%data, dust_mrel_proxy%data, dust_flux_proxy%data, day_of_year, second_of_day, &
 flux_e, flux_h, &
 urbwrr_proxy%data, urbhwr_proxy%data, urbhgt_proxy%data, urbztm_proxy%data, &
-urbdisp_proxy%data, lake_t_mxl_gb_proxy%data, lake_t_ice_gb_proxy%data, lake_h_ice_gb_proxy%data, lake_g_dt_gb_proxy%data, &
-lake_depth_gb_proxy%data, hcon_lake_proxy%data, ts1_lake_gb_proxy%data, non_lake_frac_proxy%data, &
+urbdisp_proxy%data, &
 rhostar_proxy%data, recip_l_mo_sea_proxy%data, &
 &t1_sd_2d_proxy%data, q1_sd_2d_proxy%data, gross_prim_prod_proxy%data, &
-z0h_eff_proxy%data, ocn_cpl_point_proxy%data, ndf_wtheta, &
+z0h_eff_proxy%data, ocn_cpl_point_proxy%data, lake_t_mxl_gb_proxy%data, lake_t_ice_gb_proxy%data, lake_h_ice_gb_proxy%data, lake_g_dt_gb_proxy%data, &
+lake_depth_gb_proxy%data, hcon_lake_proxy%data, ts1_lake_gb_proxy%data, non_lake_frac_proxy%data, ndf_wtheta, &
 &undf_wtheta, map_wtheta, ndf_w3, undf_w3, map_w3, ndf_adspc1_zh, undf_adspc1_zh, map_adspc1_zh, &
 &ndf_adspc2_tile_fraction, undf_adspc2_tile_fraction, map_adspc2_tile_fraction, ndf_adspc3_leaf_area_index, &
 &undf_adspc3_leaf_area_index, map_adspc3_leaf_area_index, ndf_adspc4_sea_ice_temperature, undf_adspc4_sea_ice_temperature, &
