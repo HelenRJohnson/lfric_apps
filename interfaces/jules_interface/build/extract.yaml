@@ -84,6 +84,16 @@ jules:
     - src/science/deposition/deposition_ukca_h2dd_soil.F90
     - src/science/deposition/deposition_ukca_surfddr_mod.F90
     - src/science/deposition/deposition_ukca_var_mod.F90
+    - src/science/flake/data_parameters_mod.F90
+    - src/science/flake/flake_albedo_ref_mod.F90
+    - src/science/flake/flake_configure_mod.F90
+    - src/science/flake/flake_derivedtypes_mod.F90
+    - src/science/flake/flake_driver_mod.F90
+    - src/science/flake/flake_mod.F90
+    - src/science/flake/flake_parameters_mod.F90
+    - src/science/flake/flake_paramoptic_ref_mod.F90
+    - src/science/flake/flake_radflux.F90
+    - src/science/flake/jules_flake_interface_1D.F90
     - src/science/params/blend_h_mod.F90
     - src/science/params/c_bvoc_mod.F90
     - src/science/params/c_irrigation_mod.F90
