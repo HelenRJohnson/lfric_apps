@@ -32,7 +32,7 @@ module jules_extra_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_extra_kernel_type
     private
-    type(arg_type) :: meta_args(72) = (/                                       &
+    type(arg_type) :: meta_args(74) = (/                                       &
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! conv_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_snow
@@ -93,6 +93,8 @@ module jules_extra_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1), & ! soil_moisture_content
          arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1), & ! grid_snow_mass
          arg_type(GH_FIELD, GH_REAL, GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2), & ! throughfall
+         arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! sw_down_surf
+         arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_2), & ! sw_up_tile
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_mxl_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_mean_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_ice_gb
@@ -182,6 +184,8 @@ contains
   !> @param[in,out] soil_moisture_content  Soil moisture content of soil column
   !> @param[in,out] grid_snow_mass         Gridbox total snow mass (canopy + under canopy)
   !> @param[in,out] throughfall            Throughfall from land tiles
+  !> @param[in]     sw_down_surf           Downwelling SW radiation at surface (W/m2)
+  !> @param[in]     sw_up_tile             Upwelling SW radiation on surface tiles (W/m2)
   !> @param[in,out] lake_t_mxl_gb          FLake mixed layer temperature (K)
   !> @param[in,out] lake_t_mean_gb         FLake mean temperature (K)
   !> @param[in,out] lake_t_ice_gb          FLake ice surface temperature (K)
@@ -271,6 +275,8 @@ contains
                soil_moisture_content,      &
                grid_snow_mass,             &
                throughfall,                &
+               sw_down_surf,               &
+               sw_up_tile,                 &
                lake_t_mxl_gb,              &
                lake_t_mean_gb,             &
                lake_t_ice_gb,              &
@@ -495,6 +501,9 @@ contains
     real(kind=r_def), pointer, intent(inout) :: soil_moisture_content(:)
     real(kind=r_def), pointer, intent(inout) :: grid_snow_mass(:)
     real(kind=r_def), pointer, intent(inout) :: throughfall(:)
+
+    real(kind=r_def), intent(in) :: sw_down_surf(undf_2d)
+    real(kind=r_def), intent(in) :: sw_up_tile(undf_tile)
 
     real(kind=r_def), intent(inout) :: lake_t_mxl_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_t_mean_gb(undf_2d)
@@ -776,6 +785,8 @@ contains
         fluxes%ei_surft(l, n) = real(snowice_sublimation(map_tile(1,ainfo%land_index(l))+n-1), r_um)
         fluxes%surf_htf_surft(l, n) = real(surf_heat_flux(map_tile(1,ainfo%land_index(l))+n-1), r_um)
         fluxes%ecan_surft(l, n) = real(canopy_evap(map_tile(1,ainfo%land_index(l))+n-1), r_um)
+        fluxes%sw_surft(l, n) = real(sw_down_surf(map_2d(1,ainfo%land_index(l))) - &
+                                sw_up_tile(map_tile(1,ainfo%land_index(l))+n-1), r_um)
       end do
     end do
 
@@ -1005,9 +1016,6 @@ contains
     !fqw_surft is not set so will not pick up value calculated via bl_imp
     !However, this is only presently used by river routing so has no effect in
     !LFRic
-
-    !sw_surft is not set in this kernel so will not pick up appropriate values
-    !This will affect water resource, irrigation and lakes once coupled to LFRic
 
     allocate(u_s_std_surft(land_pts, ntiles))
     allocate(gamtot_soilt(land_pts, nsoilt))
