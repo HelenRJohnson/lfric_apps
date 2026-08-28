@@ -82,6 +82,7 @@ Idealised initialisations and forcings
 - co2_atm - a CO2 only atmosphere setup
 - camembert_case3_gj1214b - Camembert intercomparison case based on GJ1214b
 - hd209458b - Hot Jupiter setup of the planet HD209458b
+- flake - 100% lake case for testing FLake scheme. 
 
 Configuration specific settings
 - june_case - change start date for 2nd June case study

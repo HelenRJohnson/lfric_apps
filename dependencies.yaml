@@ -24,6 +24,8 @@ casim:
 jules:
     source: git@github.com:pdearnshaw/jules.git
     ref: tag8.2_neg_snow_part2
+    source: cazldf00000C.spice.sc.metoffice.gov.uk:/home/users/helen.johnson/jules
+    ref:
 
 lfric_apps:
     source:
