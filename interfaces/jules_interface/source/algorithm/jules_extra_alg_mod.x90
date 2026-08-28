@@ -49,6 +49,7 @@ contains
   !> @param[in,out] surface_fields      Fields for surface scheme
   !> @param[in,out] soil_fields         Fields for soil hydrology scheme
   !> @param[in,out] snow_fields         Fields for snow scheme
+  !> @param[in]     radiation_fields    Radiation fields for FLake
   !> @param[in]     surf_heat_flux      Net surface heat flux (W m-2)
   !> @param[in]     canopy_evap         Canopy evaporation from land tiles (kg m-2 s-1)
   !> @param[in]     water_extraction    Extraction of water from each soil layer (kg m-2 s-1)
@@ -58,8 +59,8 @@ contains
   subroutine jules_extra_alg(config,                                      &
                              microphysics_fields, convection_fields,      &
                              surface_fields, soil_fields, snow_fields,    &
-                             surf_heat_flux, canopy_evap,                 &
-                             water_extraction, lake_evap,                 &
+                             radiation_fields, surf_heat_flux,            &
+                             canopy_evap, water_extraction, lake_evap,    &
                              surf_ht_flux_lake, dt)
 
     use jules_extra_kernel_mod, only: jules_extra_kernel_type
@@ -74,6 +75,7 @@ contains
     type( field_collection_type ), intent(inout) :: surface_fields
     type( field_collection_type ), intent(inout) :: soil_fields
     type( field_collection_type ), intent(inout) :: snow_fields
+    type( field_collection_type ), intent(in)    :: radiation_fields
 
     type( field_type ), intent (in) :: surf_heat_flux
     type( field_type ), intent (in) :: canopy_evap
@@ -158,6 +160,9 @@ contains
     type( field_type ), pointer :: snow_layer_temp        => null()
     type( field_type ), pointer :: snow_layer_rgrain      => null()
     type( field_type ), pointer :: snow_unload_rate       => null()
+
+    type( field_type ), pointer :: sw_down_surf           => null()
+    type( field_type ), pointer :: sw_up_tile             => null()
 
     ! local variables
     type( field_type ) :: soil_moisture_content
@@ -255,6 +260,10 @@ contains
     call snow_fields%get_field('snow_layer_rgrain', snow_layer_rgrain)
     call snow_fields%get_field('snow_unload_rate', snow_unload_rate)
 
+    ! Radiation fields
+    call radiation_fields%get_field('sw_down_surf', sw_down_surf)
+    call radiation_fields%get_field('sw_up_tile', sw_up_tile)
+
     ! Initialise the snow diagnostics
     call initialise_diags_for_jules_snow(soil_moist_sat,                       &
                                          grid_snow_mass, grid_snowmelt)
@@ -295,11 +304,11 @@ contains
                            soil_sat_frac, water_table, wetness_under_soil,     &
                            surface_runoff, sub_surface_runoff,                 &
                            soil_moisture_content, grid_snow_mass,              &
-                           throughfall, lake_t_mxl_gb, lake_t_mean_gb,         &
-                           lake_t_ice_gb, lake_h_mxl_gb, lake_h_ice_gb,        &
-                           lake_shape_factor_gb, lake_g_dt_gb, lake_depth_gb,  &
-                           non_lake_frac, surf_ht_flux_lake, hcon_lake,        &
-                           ts1_lake_gb) )
+                           throughfall, sw_down_surf, sw_up_tile,              &
+                           lake_t_mxl_gb, lake_t_mean_gb, lake_t_ice_gb,       &
+                           lake_h_mxl_gb, lake_h_ice_gb, lake_shape_factor_gb, &
+                           lake_g_dt_gb, lake_depth_gb, non_lake_frac,         &
+                           surf_ht_flux_lake, hcon_lake, ts1_lake_gb) )
 
     if ( lake_water_conservation ) then
       call lake_water_correction(config, lake_evap, soil_moisture,             &

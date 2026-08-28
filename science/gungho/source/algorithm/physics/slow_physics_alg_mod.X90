@@ -1220,8 +1220,8 @@ contains
           call jules_extra_alg(modeldb%config,                           &
                                microphysics_fields, convection_fields,   &
                                surface_fields, soil_fields, snow_fields, &
-                               surf_heat_flux, canopy_evap,              &
-                               water_extraction, lake_evap,              &
+                               radiation_fields, surf_heat_flux,         &
+                               canopy_evap, water_extraction, lake_evap, &
                                surf_ht_flux_lake, dt)
         end if ! jules
         ! Output diagnostics
