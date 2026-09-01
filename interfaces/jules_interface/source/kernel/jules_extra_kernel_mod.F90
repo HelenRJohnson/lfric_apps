@@ -32,7 +32,7 @@ module jules_extra_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_extra_kernel_type
     private
-    type(arg_type) :: meta_args(73) = (/                                       &
+    type(arg_type) :: meta_args(74) = (/                                       &
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! conv_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_snow
@@ -105,7 +105,8 @@ module jules_extra_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! non_lake_frac
          arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! surf_ht_flux_lake
          arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! hcon_lake
-         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1)  & ! ts1_lake_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! ts1_lake_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_2)  & ! u_s_std_tile
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -196,6 +197,7 @@ contains
   !> @param[in]     surf_ht_flux_lake      FLake downward heat flux at surface over lake
   !> @param[in]     hcon_lake              FLake thermal conductivity of the lake-ice/lake/soil sandwich (W/m/K)
   !> @param[in]     ts1_lake_gb            FLake average temperature of lake-ice/lake/soil sandwich (K)
+  !> @param[in]     u_s_std_tile           Surface friction velocity (standard value)
   !> @param[in]     ndf_2d                 Total DOFs per cell for 2D fields
   !> @param[in]     undf_2d                Unique DOFs per cell for 2D fields
   !> @param[in]     map_2d                 DOFmap for cells for 2D fields
@@ -286,6 +288,7 @@ contains
                surf_ht_flux_lake,          &
                hcon_lake,                  &
                ts1_lake_gb,                &
+               u_s_std_tile,               &
                ndf_2d,                     &
                undf_2d,                    &
                map_2d,                     &
@@ -514,6 +517,7 @@ contains
     real(kind=r_def), intent(in) :: surf_ht_flux_lake(undf_2d)
     real(kind=r_def), intent(in) :: hcon_lake(undf_2d)
     real(kind=r_def), intent(in) :: ts1_lake_gb(undf_2d)
+    real(kind=r_def), intent(in) :: u_s_std_tile(undf_tile)
 
     ! Local variables for the kernel
     integer(kind=i_def) :: i, j, n, i_snow, m, l
@@ -544,7 +548,7 @@ contains
 
     ! State
     real(r_um), dimension(:,:), allocatable :: u_s_std_surft
-
+    
     real(r_um), dimension(:,:), allocatable :: fexp_soilt, gamtot_soilt,      &
          ti_mean_soilt, ti_sig_soilt, a_fsat_soilt, c_fsat_soilt,             &
          a_fwet_soilt, c_fwet_soilt
@@ -993,6 +997,9 @@ contains
         lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%hcon_lake(l) = real(hcon_lake(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%ts1_lake_gb(l) = real(ts1_lake_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        do n = 1, nsurft
+          u_s_std_surft(l,n) = real(u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1), r_um)
+        end do
       end do
       do i = 1, seg_len
         lake_vars%surf_ht_flux_lake_ij(i,1) = real(surf_ht_flux_lake(map_2d(1,i)), r_um)

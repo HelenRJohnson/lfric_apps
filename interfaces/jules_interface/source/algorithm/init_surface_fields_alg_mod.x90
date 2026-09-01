@@ -71,6 +71,7 @@ contains
     type( field_type ), pointer :: hcon_lake           => null()
     type( field_type ), pointer :: ts1_lake_gb         => null()
     type( field_type ), pointer :: non_lake_frac       => null()
+    type( field_type ), pointer :: u_s_std_tile        => null()
 
     ! Prognostic fields
     type( field_type ), pointer :: tile_fraction       => null()
@@ -231,6 +232,7 @@ contains
        call surface_fields%get_field('hcon_lake', hcon_lake)
        call surface_fields%get_field('ts1_lake_gb', ts1_lake_gb)
        call surface_fields%get_field('non_lake_frac', non_lake_frac)
+       call surface_fields%get_field('u_s_std_tile', u_s_std_tile)
        call invoke( setval_c(lake_t_mxl_gb, 277.0_r_def),                     &
                     setval_c(lake_t_mean_gb, 277.0_r_def),                    &
                     setval_c(lake_t_ice_gb, 270.0_r_def),                     &
@@ -241,7 +243,8 @@ contains
                     setval_c(lake_depth_gb, 5.0_r_def),                       &
                     setval_c(hcon_lake, 0.56_r_def),                          &
                     setval_c(ts1_lake_gb, 0.0_r_def),                         &
-                    setval_c(non_lake_frac, 1.0_r_def))
+                    setval_c(non_lake_frac, 1.0_r_def),                       &
+                    setval_c(u_s_std_tile, 0.0_r_def))
     end if
 
     if ( surf_temp_forcing == surf_temp_forcing_int_flux ) then

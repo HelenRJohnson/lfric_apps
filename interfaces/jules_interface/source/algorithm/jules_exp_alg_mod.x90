@@ -184,6 +184,7 @@ contains
     type( field_type ), pointer :: hcon_lake
     type( field_type ), pointer :: ts1_lake_gb
     type( field_type ), pointer :: non_lake_frac
+    type( field_type ), pointer :: u_s_std_tile
     type( integer_field_type ), pointer :: ocn_cpl_point
 
     type( field_type ), pointer :: peak_to_trough_orog
@@ -347,6 +348,7 @@ contains
     call surface_fields%get_field('hcon_lake', hcon_lake)
     call surface_fields%get_field('ts1_lake_gb', ts1_lake_gb)
     call surface_fields%get_field('non_lake_frac', non_lake_frac)
+    call surface_fields%get_field('u_s_std_tile', u_s_std_tile)
 
 
     ! Soil fields
@@ -466,7 +468,8 @@ contains
                                gross_prim_prod, z0h_eff, ocn_cpl_point,        &
                                lake_t_mxl_gb, lake_t_ice_gb, lake_h_ice_gb,    &
                                lake_g_dt_gb, lake_depth_gb, hcon_lake,         &
-                               ts1_lake_gb, non_lake_frac, stencil_depth )
+                               ts1_lake_gb, non_lake_frac, u_s_std_tile,       &
+                               stencil_depth )
 
     ! Switch UM back to columns
     call um_sizes_init(1_i_def)

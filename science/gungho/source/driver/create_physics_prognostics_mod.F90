@@ -951,6 +951,8 @@ contains
         mult='surface_tiles', twod=.true.))
     call processor%apply(make_spec('gc_tile', main%surface, W3, mult='surface_tiles', &
         twod=.true.))
+    call processor%apply(make_spec('u_s_std_tile', main%surface, W3,              &
+        mult='surface_tiles', twod=.true.))
 
     ! Fields on surface tiles used by coupler, need checkpointing in coupled models
     call processor%apply(make_spec('tile_moisture_flux', main%surface, W3,      &
