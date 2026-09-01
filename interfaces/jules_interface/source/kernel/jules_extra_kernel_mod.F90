@@ -32,7 +32,7 @@ module jules_extra_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_extra_kernel_type
     private
-    type(arg_type) :: meta_args(59) = (/                                       &
+    type(arg_type) :: meta_args(60) = (/                                       &
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! conv_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_snow
@@ -67,6 +67,7 @@ module jules_extra_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_4), & ! water_extraction
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! thermal_cond_wet_soil
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! urbztm
+         arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! rhostar
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_4), & ! soil_temperature
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_4), & ! soil_moisture
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_4), & ! unfrozen_soil_moisture
@@ -143,6 +144,7 @@ contains
   !> @param[in]     water_extraction       Extraction of water from each soil layer (kg m-2 s-1)
   !> @param[in]     thermal_cond_wet_soil  Thermal conductivity of soil (W m-1 K-1)
   !> @param[in]     urbztm                 Urban effective roughness length
+  !> @param[in]     rhostar                Surface air density
   !> @param[in,out] soil_temperature       Soil temperature (K)
   !> @param[in,out] soil_moisture          Soil moisture content (kg m-2)
   !> @param[in,out] unfrozen_soil_moisture Unfrozen soil moisture proportion
@@ -219,6 +221,7 @@ contains
                water_extraction,           &
                thermal_cond_wet_soil,      &
                urbztm,                     &
+               rhostar,                    &
                soil_temperature,           &
                soil_moisture,              &
                unfrozen_soil_moisture,     &
@@ -424,6 +427,7 @@ contains
     real(kind=r_def), intent(in)    :: net_prim_prod(undf_2d)
     real(kind=r_def), intent(in)    :: thermal_cond_wet_soil(undf_2d)
     real(kind=r_def), intent(in)    :: urbztm(undf_2d)
+    real(kind=r_def), intent(in)    :: rhostar(undf_2d)
     real(kind=r_def), intent(in)    :: inland_basin_flow(undf_2d)
 
     real(kind=r_def), intent(inout) :: canopy_water(undf_tile)
@@ -481,7 +485,8 @@ contains
     ! Driving data
     real(r_um), dimension(seg_len, 1) :: ls_graup_ij,                         &
          u_1_ij, v_1_ij, cca_2d_ij, soil_clay_ij, cos_theta_latitude,         &
-         flash_rate_ancil, pop_den_ancil, wealth_index_ancil, flandg, rho_star
+         flash_rate_ancil, pop_den_ancil, wealth_index_ancil, flandg,         &
+         rhostar_ij
 
     ! State
     real(r_um), dimension(:,:), allocatable :: u_s_std_surft
@@ -702,6 +707,7 @@ contains
       forcing%con_snow_ij(i,1) = conv_snow(map_2d(1,i)) ! Convective snowfallfall rate
       cca_2d_ij(i,1)   = cca_2d(map_2d(1,i))    ! Convective cloud amount
       ls_graup_ij(i,1) = ls_graup(map_2d(1,i)) ! Large-scale graupelfall rate
+      rhostar_ij(i,1) = rhostar(map_2d(1,i)) ! surface_air_density
     end do
 
     allocate(ls_rainfrac_gb(land_pts))
@@ -942,7 +948,7 @@ contains
     u_1_ij, v_1_ij,                                                           &
 
     !Misc INTENT(IN)
-    a_step, smlt, ainfo%frac_surft, hcons_soilt, rho_star,                    &
+    a_step, smlt, ainfo%frac_surft, hcons_soilt, rhostar_ij,                     &
 
     !IN
     land_pts, seg_len, 1, river_row_length, river_rows,                       &

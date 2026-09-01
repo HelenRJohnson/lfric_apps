@@ -63,7 +63,6 @@ contains
   !>@param[in]     snow_fields         (in,out) Fields for snow scheme
   !>@param[in]     aerosol_fields      Fields for aerosol scheme
   !>@param[in,out] recip_l_mo_sea      Inverse Obukhov length over sea only
-  !>@param[in,out] rhostar             Surface density
   !>@param[in,out] t1_sd_2d            StDev of level 1 temperature
   !>@param[in,out] q1_sd_2d            StDev of level 1 humidity
   subroutine jules_exp_alg(modeldb, theta, mr_n,                             &
@@ -72,7 +71,7 @@ contains
                            turbulence_fields, convection_fields,             &
                            cloud_fields, surface_fields, soil_fields,        &
                            snow_fields, aerosol_fields, recip_l_mo_sea,      &
-                           rhostar, t1_sd_2d, q1_sd_2d)
+                           t1_sd_2d, q1_sd_2d)
 
     use psykal_lite_phys_mod, only: invoke_jules_exp_kernel_type
     use xios, only: xios_date, xios_get_current_date,                        &
@@ -96,7 +95,6 @@ contains
     type( field_collection_type ), intent(in)    :: aerosol_fields
 
     type( field_type ), intent( inout )     :: recip_l_mo_sea
-    type( field_type ), intent( inout )     :: rhostar
     type( field_type ), intent( inout )     :: t1_sd_2d
     type( field_type ), intent( inout )     :: q1_sd_2d
 
@@ -163,6 +161,7 @@ contains
     type( field_type ), pointer :: gc_tile
     type( field_type ), pointer :: canhc_tile
     type( field_type ), pointer :: z0m_eff
+    type( field_type ), pointer :: rhostar
     type( field_type ), pointer :: ustar
     type( field_type ), pointer :: tile_water_extract
     type( field_type ), pointer :: net_prim_prod
@@ -314,6 +313,7 @@ contains
     call surface_fields%get_field('gc_tile', gc_tile)
     call surface_fields%get_field('canhc_tile', canhc_tile)
     call surface_fields%get_field('z0m_eff', z0m_eff)
+    call surface_fields%get_field('rhostar', rhostar)
     call surface_fields%get_field('ustar', ustar)
     call surface_fields%get_field('tile_water_extract', tile_water_extract)
     call surface_fields%get_field('net_prim_prod', net_prim_prod)
@@ -374,7 +374,6 @@ contains
                                         soil_respiration)
 
     call zh%copy_field_properties(recip_l_mo_sea)
-    call zh%copy_field_properties(rhostar)
     call zh%copy_field_properties(t1_sd_2d)
     call zh%copy_field_properties(q1_sd_2d)
 

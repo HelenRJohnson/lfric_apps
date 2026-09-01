@@ -96,6 +96,7 @@ contains
     type( field_type ), pointer :: snowice_melt           => null()
     type( field_type ), pointer :: snowice_sublimation    => null()
     type( field_type ), pointer :: urbztm                 => null()
+    type( field_type ), pointer :: rhostar                => null()
     type( field_type ), pointer :: inland_basin_flow      => null()
 
     ! Sea ice fields
@@ -177,6 +178,7 @@ contains
     call surface_fields%get_field('snowice_melt', snowice_melt)
     call surface_fields%get_field('snowice_sublimation', snowice_sublimation)
     call surface_fields%get_field('urbztm', urbztm)
+    call surface_fields%get_field('rhostar', rhostar)
 
     ! Sea ice fields
     call surface_fields%get_field('sea_ice_thickness', sea_ice_thickness)
@@ -256,7 +258,7 @@ contains
                            net_prim_prod, snowice_sublimation, surf_heat_flux, &
                            inland_basin_flow,                                  &
                            canopy_evap, water_extraction,                      &
-                           thermal_cond_wet_soil, urbztm,                      &
+                           thermal_cond_wet_soil, urbztm, rhostar,             &
                            soil_temperature, soil_moisture,                    &
                            unfrozen_soil_moisture, frozen_soil_moisture,       &
                            canopy_water, tile_snow_mass, tile_snow_rgrain,     &

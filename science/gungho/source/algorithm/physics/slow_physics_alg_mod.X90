@@ -277,7 +277,7 @@ contains
     type( field_type ) :: conv_liquid_fraction, conv_frozen_fraction
     type( field_type ) :: conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number
     ! ...for JULES & Boundary Layer
-    type( field_type ) :: recip_l_mo_sea, rhostar
+    type( field_type ) :: recip_l_mo_sea
     type( field_type ) :: t1_sd_2d, q1_sd_2d
     ! ...for spectral GWD
     type( field_type ) :: du_spectral_gwd, dv_spectral_gwd
@@ -872,8 +872,7 @@ contains
                          orography_fields,                                   &
                          turbulence_fields, convection_fields, cloud_fields, &
                          surface_fields, soil_fields, snow_fields,           &
-                         aerosol_fields, recip_l_mo_sea, rhostar,            &
-                         t1_sd_2d, q1_sd_2d)
+                         aerosol_fields, recip_l_mo_sea, t1_sd_2d, q1_sd_2d)
 
       call bl_exp_alg(modeldb%config,                                     &
                       theta, rho, exner, mr_n,                            &
@@ -881,8 +880,7 @@ contains
                       microphysics_fields, dmr_mphys, orography_fields,   &
                       turbulence_fields, convection_fields, cloud_fields, &
                       surface_fields,                                     &
-                      recip_l_mo_sea, rhostar,                            &
-                      t1_sd_2d, q1_sd_2d, clock)
+                      recip_l_mo_sea, t1_sd_2d, q1_sd_2d, clock)
     end if
 
     !--------------------------------------------------------------------

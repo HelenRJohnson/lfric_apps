@@ -56,7 +56,7 @@ contains
                                          surf_heat_flux, canopy_evap,        &
                                          water_extraction, lake_evap,        &
                                          theta_star_surf, qv_star_surf,      &
-                                         recip_l_mo_sea, rhostar,            &
+                                         recip_l_mo_sea,                     &
                                          t1_sd_2d, q1_sd_2d, ustar_implicit, &
                                          t1p5m, q1p5m, qcl1p5m, t1p5m_ssi,   &
                                          q1p5m_ssi, qcl1p5m_ssi, t1p5m_land, &
@@ -121,8 +121,7 @@ contains
                         orography_fields,                                   &
                         turbulence_fields, convection_fields, cloud_fields, &
                         surface_fields, soil_fields, snow_fields,           &
-                        aerosol_fields, recip_l_mo_sea, rhostar,            &
-                        t1_sd_2d, q1_sd_2d )
+                        aerosol_fields, recip_l_mo_sea, t1_sd_2d, q1_sd_2d )
 
     ! Call the algorithm
     call log_event( "Running BOUNDARY LAYER EXP", LOG_LEVEL_INFO )
@@ -137,9 +136,8 @@ contains
                      convection_fields,                &
                      cloud_fields,                     &
                      surface_fields,                   &
-                     recip_l_mo_sea, rhostar,          &
-                     t1_sd_2d, q1_sd_2d, &
-                     modeldb%clock )
+                     recip_l_mo_sea, t1_sd_2d,         &
+                     q1_sd_2d, modeldb%clock )
 
     call log_event( "Running BOUNDARY LAYER IMP", LOG_LEVEL_INFO )
     call bl_imp_alg( modeldb%config,                  &

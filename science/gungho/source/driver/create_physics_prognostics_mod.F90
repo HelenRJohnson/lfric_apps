@@ -972,6 +972,7 @@ contains
     call processor%apply(make_spec('taux_ssi', main%surface, W3, twod=.true.))
     call processor%apply(make_spec('tauy_ssi', main%surface, W3, twod=.true.))
     call processor%apply(make_spec('z0m', main%surface, W3, twod=.true.))
+    call processor%apply(make_spec('rhostar', main%surface, W3, twod=.true.))
     call processor%apply(make_spec('ustar', main%surface, W3, twod=.true.))
     call processor%apply(make_spec('wspd10m', main%surface, W3, twod=.true.))
     call processor%apply(make_spec('urbdisp', main%surface, W3, twod=.true., &
