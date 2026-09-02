@@ -162,8 +162,8 @@ module jules_exp_kernel_mod
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake depth
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! hcon_lake
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! ts1_lake_gb
-         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1) &! non_lake_frac
-         arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2),&! u_s_std_tile
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! non_lake_frac
+         arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2) &! u_s_std_tile
          /)
     integer :: operates_on = DOMAIN
   contains
@@ -1885,7 +1885,7 @@ contains
         hcon_lake(map_2d(1,ainfo%land_index(l))) = real(lake_vars%hcon_lake(l), r_def)
         ts1_lake_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%ts1_lake_gb(l), r_def)
         do n = 1, n_land_tile
-           u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1) = aerotype%u_s_std_surft(l,n)
+           u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1) = real(aerotype%u_s_std_surft(l,n), r_def)
         end do
       end do
     end if
