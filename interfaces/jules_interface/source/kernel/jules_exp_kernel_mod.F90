@@ -46,7 +46,7 @@ module jules_exp_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_exp_kernel_type
     private
-    type(arg_type) :: meta_args(116) = (/                                      &
+    type(arg_type) :: meta_args(117) = (/                                      &
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! theta_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! exner_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      W3, STENCIL(REGION)),      &! u_in_w3
@@ -162,7 +162,8 @@ module jules_exp_kernel_mod
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake depth
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! hcon_lake
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! ts1_lake_gb
-         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1) &! non_lake_frac
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! non_lake_frac
+         arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2) &! u_s_std_tile
          /)
     integer :: operates_on = DOMAIN
   contains
@@ -293,6 +294,7 @@ contains
   !> @param[in,out] hcon_lake              thermal conductivity of the lake-ice, lake and soil sandwich (W/m/K)
   !> @param[in,out] ts1_lake_gb            average temperature of the lake-ice, lake and soil sandwich (K)
   !> @param[in]     non_lake_frac          FLake non-lake fraction of the gridbox
+  !> @param[inout]  u_s_std_tile           Surface friction velocity (standard value)
   !> @param[in]     ndf_wth                Number of DOFs per cell for potential temperature space
   !> @param[in]     undf_wth               Number of unique DOFs for potential temperature space
   !> @param[in]     map_wth                Dofmap for the cell at the base of the column for potential temperature space
@@ -451,6 +453,7 @@ contains
                            hcon_lake,                             &
                            ts1_lake_gb,                           &
                            non_lake_frac,                         &
+                           u_s_std_tile,                          &
                            ndf_wth, undf_wth, map_wth,            &
                            ndf_w3, undf_w3, map_w3,               &
                            ndf_2d, undf_2d, map_2d,               &
@@ -690,6 +693,7 @@ contains
     real(kind=r_def), intent(in) :: non_lake_frac(undf_2d)
     real(kind=r_def), intent(inout) :: hcon_lake(undf_2d)
     real(kind=r_def), intent(inout) :: ts1_lake_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: u_s_std_tile(undf_tile)
 
     real(kind=r_def), intent(in) :: soil_moist_wilt(undf_2d)
     real(kind=r_def), intent(in) :: soil_moist_crit(undf_2d)
@@ -1880,6 +1884,9 @@ contains
       do l = 1, land_field
         hcon_lake(map_2d(1,ainfo%land_index(l))) = real(lake_vars%hcon_lake(l), r_def)
         ts1_lake_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%ts1_lake_gb(l), r_def)
+        do n = 1, n_land_tile
+          u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1) = real(aerotype%u_s_std_surft(l,n), r_def)
+        end do
       end do
     end if
 

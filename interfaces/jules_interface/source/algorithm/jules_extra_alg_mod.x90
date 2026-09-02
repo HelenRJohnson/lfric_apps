@@ -115,6 +115,7 @@ contains
     type( field_type ), pointer :: non_lake_frac          => null()
     type( field_type ), pointer :: hcon_lake              => null()
     type( field_type ), pointer :: ts1_lake_gb            => null()
+    type( field_type ), pointer :: u_s_std_tile           => null()
 
     ! Sea ice fields
     type( field_type ), pointer :: sea_ice_thickness      => null()
@@ -220,6 +221,7 @@ contains
     call surface_fields%get_field('non_lake_frac', non_lake_frac)
     call surface_fields%get_field('hcon_lake', hcon_lake)
     call surface_fields%get_field('ts1_lake_gb', ts1_lake_gb)
+    call surface_fields%get_field('u_s_std_tile', u_s_std_tile)
 
     ! Soil fields
     call soil_fields%get_field('soil_moist_wilt', soil_moist_wilt)
@@ -311,7 +313,8 @@ contains
                            lake_t_mxl_gb, lake_t_mean_gb, lake_t_ice_gb,       &
                            lake_h_mxl_gb, lake_h_ice_gb, lake_shape_factor_gb, &
                            lake_g_dt_gb, lake_depth_gb, non_lake_frac,         &
-                           surf_ht_flux_lake, hcon_lake, ts1_lake_gb) )
+                           surf_ht_flux_lake, hcon_lake, ts1_lake_gb,          &
+                           u_s_std_tile) )
 
     if ( lake_water_conservation ) then
       call lake_water_correction(config, lake_evap, soil_moisture,             &
