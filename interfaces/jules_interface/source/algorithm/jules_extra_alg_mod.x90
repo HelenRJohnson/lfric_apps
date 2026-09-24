@@ -106,6 +106,7 @@ contains
     type( field_type ), pointer :: lake_t_mxl_gb          => null()
     type( field_type ), pointer :: lake_t_mean_gb         => null()
     type( field_type ), pointer :: lake_t_ice_gb          => null()
+    type( field_type ), pointer :: lake_t_snow_gb         => null()
     type( field_type ), pointer :: lake_h_mxl_gb          => null()
     type( field_type ), pointer :: lake_h_ice_gb          => null()
     type( field_type ), pointer :: lake_shape_factor_gb   => null()
@@ -164,6 +165,7 @@ contains
 
     type( field_type ), pointer :: sw_down_surf           => null()
     type( field_type ), pointer :: sw_up_tile             => null()
+    type( field_type ), pointer :: sw_down_surf_rts       => null()
 
     ! local variables
     type( field_type ) :: soil_moisture_content
@@ -211,6 +213,7 @@ contains
     call surface_fields%get_field('lake_t_mxl_gb', lake_t_mxl_gb)
     call surface_fields%get_field('lake_t_mean_gb', lake_t_mean_gb)
     call surface_fields%get_field('lake_t_ice_gb', lake_t_ice_gb)
+    call surface_fields%get_field('lake_t_snow_gb', lake_t_snow_gb)
     call surface_fields%get_field('lake_h_mxl_gb', lake_h_mxl_gb)
     call surface_fields%get_field('lake_h_ice_gb', lake_h_ice_gb)
     call surface_fields%get_field('lake_shape_factor_gb', lake_shape_factor_gb)
@@ -265,6 +268,7 @@ contains
     ! Radiation fields
     call radiation_fields%get_field('sw_down_surf', sw_down_surf)
     call radiation_fields%get_field('sw_up_tile', sw_up_tile)
+    call radiation_fields%get_field('sw_down_surf_rts', sw_down_surf_rts)
 
     ! Initialise the snow diagnostics
     call initialise_diags_for_jules_snow(soil_moist_sat,                       &
@@ -307,11 +311,11 @@ contains
                            surface_runoff, sub_surface_runoff,                 &
                            soil_moisture_content, grid_snow_mass,              &
                            throughfall, sw_down_surf, sw_up_tile,              &
-                           lake_t_mxl_gb, lake_t_mean_gb, lake_t_ice_gb,       &
-                           lake_h_mxl_gb, lake_h_ice_gb, lake_shape_factor_gb, &
-                           lake_g_dt_gb, lake_depth_gb, non_lake_frac,         &
-                           surf_ht_flux_lake, hcon_lake, ts1_lake_gb,          &
-                           u_s_std_tile) )
+                           sw_down_surf_rts, lake_t_mxl_gb, lake_t_mean_gb,    &
+                           lake_t_ice_gb, lake_t_snow_gb, lake_h_mxl_gb,       &
+                           lake_h_ice_gb, lake_shape_factor_gb, lake_g_dt_gb,  &
+                           lake_depth_gb, non_lake_frac, surf_ht_flux_lake,    &
+                           hcon_lake, ts1_lake_gb, u_s_std_tile) )
 
     if ( lake_water_conservation ) then
       call lake_water_correction(config, lake_evap, soil_moisture,             &

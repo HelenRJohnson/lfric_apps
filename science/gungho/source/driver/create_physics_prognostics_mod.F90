@@ -1029,6 +1029,8 @@ contains
          twod=.true., empty=(.not. l_flake_model)))
     call processor%apply(make_spec('non_lake_frac', main%surface, W3, &
          twod=.true., empty=(.not. l_flake_model)))
+    call processor%apply(make_spec('lake_t_snow_gb', main%surface, W3, &
+         twod=.true., empty=(.not. l_flake_model)))
 
     ! Space for variables required for regridding to cell faces
     ! vector_space => function_space_collection%get_fs(twod_mesh, 0, 0, W2,

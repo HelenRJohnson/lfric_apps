@@ -97,6 +97,7 @@ module jules_extra_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_mxl_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_mean_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_ice_gb
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! lake_t_snow_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_h_mxl_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_h_ice_gb
          arg_type(GH_FIELD, GH_REAL, GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! lake_shape_factor_gb
@@ -188,6 +189,7 @@ contains
   !> @param[in,out] lake_t_mxl_gb          FLake mixed layer temperature (K)
   !> @param[in,out] lake_t_mean_gb         FLake mean temperature (K)
   !> @param[in,out] lake_t_ice_gb          FLake ice surface temperature (K)
+  !> @param[in,out] lake_t_snow_gb         FLake temperature at the snow-air interface (K)
   !> @param[in,out] lake_h_mxl_gb          FLake mixed layer thickness (m)
   !> @param[in,out] lake_h_ice_gb          FLake ice thickness (m)
   !> @param[in,out] lake_shape_factor_gb   FLake shape factor
@@ -279,6 +281,7 @@ contains
                lake_t_mxl_gb,              &
                lake_t_mean_gb,             &
                lake_t_ice_gb,              &
+               lake_t_snow_gb,             &
                lake_h_mxl_gb,              &
                lake_h_ice_gb,              &
                lake_shape_factor_gb,       &
@@ -335,7 +338,7 @@ contains
                                         l_acclim, l_sugar, l_red
     use theta_field_sizes,        only: t_i_length, t_j_length, u_i_length,    &
                                         u_j_length, v_i_length, v_j_length
-    use jules_surface_types_mod,  only: ncpft, nnpft
+    use jules_surface_types_mod,  only: ncpft, nnpft, lake
     use jules_irrig_mod,          only: irr_crop, irr_crop_doell
     use atm_fields_bounds_mod,    only: pdims_s, pdims
     use jules_radiation_mod,      only: l_albedo_obs
@@ -503,10 +506,12 @@ contains
 
     real(kind=r_def), intent(in) :: sw_down_surf(undf_2d)
     real(kind=r_def), intent(in) :: sw_up_tile(undf_tile)
+    real(kind=r_def), intent(in) :: sw_down_surf_rts()
 
     real(kind=r_def), intent(inout) :: lake_t_mxl_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_t_mean_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_t_ice_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_t_snow_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_h_mxl_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_h_ice_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_shape_factor_gb(undf_2d)
@@ -997,14 +1002,28 @@ contains
         lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%hcon_lake(l) = real(hcon_lake(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%ts1_lake_gb(l) = real(ts1_lake_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%lake_t_sfc_gb(l) = real(tile_temperature(map_tile(1,ainfo%land_index(l))+lake-1))), r_um)
+        lake_vars%lake_t_snow_gb(l) = real(lake_t_snow_gb(map_2d(1,ainfo%land_index(l))), r_um)
+
+        ! calculate mean albedo of the lake tile
+        lake_vars%lake_albedo_gb(l) = real(1.0 - (fluxes%sw_surft(l,lake)     &
+             / sw_down_surf(map_2d(1,ainfo%land_index(l)))), r_um)
+        
+        ! set the FLake snow depth, depending on the presence of ice
+        lake_vars%lake_h_snow_gb(l) = 0.0
+        if (lake_vars%lake_h_ice_gb(l) > 0.0) then
+          lake_vars%lake_h_snow_gb(l) = progs%snowdepth_surft(l,lake)
+        end if
+       
         do n = 1, nsurft
           u_s_std_surft(l,n) = real(u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1), r_um)
         end do
       end do
+     
       do i = 1, seg_len
         lake_vars%surf_ht_flux_lake_ij(i,1) = real(surf_ht_flux_lake(map_2d(1,i)), r_um)
       end do
-    end if
+    end if !FLake
 
   !----------------------------------------------------------------------------
   ! Call to surf_couple_extra using JULESvn5.4 standalone variable names
@@ -1152,6 +1171,7 @@ contains
           lake_t_mxl_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_mxl_gb(l), r_def)
           lake_t_mean_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_mean_gb(l), r_def)
           lake_t_ice_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_ice_gb(l), r_def)
+          lake_t_snow_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_t_snow_gb(l), r_def)
           lake_h_mxl_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_h_mxl_gb(l), r_def)
           lake_h_ice_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_h_ice_gb(l), r_def)
           lake_shape_factor_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%lake_shape_factor_gb(l), r_def)
