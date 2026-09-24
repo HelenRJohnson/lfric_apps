@@ -1005,7 +1005,7 @@ contains
         lake_vars%lake_t_sfc_gb(l) = real(tile_temperature(map_tile(1,ainfo%land_index(l))+lake-1))), r_um)
         lake_vars%lake_t_snow_gb(l) = real(lake_t_snow_gb(map_2d(1,ainfo%land_index(l))), r_um)
 
-        ! calculate mean albedo of the lake tile
+        ! calculate mean albedo of the lake tile on model timesteps
         lake_vars%lake_albedo_gb(l) = real(1.0 - (fluxes%sw_surft(l,lake)     &
              / sw_down_surf(map_2d(1,ainfo%land_index(l)))), r_um)
         
