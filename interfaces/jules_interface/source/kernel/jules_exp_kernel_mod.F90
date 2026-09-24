@@ -46,7 +46,7 @@ module jules_exp_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_exp_kernel_type
     private
-    type(arg_type) :: meta_args(117) = (/                                      &
+    type(arg_type) :: meta_args(118) = (/                                      &
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! theta_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! exner_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      W3, STENCIL(REGION)),      &! u_in_w3
@@ -163,6 +163,7 @@ module jules_exp_kernel_mod
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! hcon_lake
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! ts1_lake_gb
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! non_lake_frac
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! FLake snow surface temp
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2) &! u_s_std_tile
          /)
     integer :: operates_on = DOMAIN
@@ -294,7 +295,8 @@ contains
   !> @param[in,out] hcon_lake              thermal conductivity of the lake-ice, lake and soil sandwich (W/m/K)
   !> @param[in,out] ts1_lake_gb            average temperature of the lake-ice, lake and soil sandwich (K)
   !> @param[in]     non_lake_frac          FLake non-lake fraction of the gridbox
-  !> @param[inout]  u_s_std_tile           Surface friction velocity (standard value)
+  !> @param[in,out] lake_t_snow_gb         FLake temperature of the air-snow interface (K)
+  !> @param[in,out] u_s_std_tile           Surface friction velocity (standard value)
   !> @param[in]     ndf_wth                Number of DOFs per cell for potential temperature space
   !> @param[in]     undf_wth               Number of unique DOFs for potential temperature space
   !> @param[in]     map_wth                Dofmap for the cell at the base of the column for potential temperature space
@@ -453,6 +455,7 @@ contains
                            hcon_lake,                             &
                            ts1_lake_gb,                           &
                            non_lake_frac,                         &
+                           lake_t_snow_gb,                        &
                            u_s_std_tile,                          &
                            ndf_wth, undf_wth, map_wth,            &
                            ndf_w3, undf_w3, map_w3,               &
@@ -693,6 +696,7 @@ contains
     real(kind=r_def), intent(in) :: non_lake_frac(undf_2d)
     real(kind=r_def), intent(inout) :: hcon_lake(undf_2d)
     real(kind=r_def), intent(inout) :: ts1_lake_gb(undf_2d)
+    real(kind=r_def), intent(inout) :: lake_t_snow_gb(undf_2d)
     real(kind=r_def), intent(inout) :: u_s_std_tile(undf_tile)
 
     real(kind=r_def), intent(in) :: soil_moist_wilt(undf_2d)
@@ -1197,14 +1201,20 @@ contains
 
     if ( l_flake_model ) then
       do l = 1, land_field
+        ! Pass values stored in LFRic to JULES variables: 
         lake_vars%lake_t_mxl_gb(l) = real(lake_t_mxl_gb(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%lake_t_ice_gb(l) = real(lake_t_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%lake_h_ice_gb(l) = real(lake_h_ice_gb(map_2d(1,ainfo%land_index(l))), r_um)
-        lake_vars%g_dt_gb(l)  = real(lake_g_dt_gb(map_2d(1,ainfo%land_index(l))), r_um)
+        lake_vars%g_dt_gb(l)       = real(lake_g_dt_gb(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%lake_depth_gb(l) = real(lake_depth_gb(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%hcon_lake(l)     = real(hcon_lake(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%ts1_lake_gb(l)   = real(ts1_lake_gb(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
+        
+        ! Copy surface temperature from previous timestep to FLake field before
+        ! temperature update: (done here to avoid additional prognostic that
+        ! needs checkpointing, used in jules_extra)
+        lake_t_snow_gb(map_2d(1,ainfo%land_index(l))) = real(tile_temperature(map_tile((1,ainfo%land_index(l))+lake-1)), r_def)
       end do
     end if
 
