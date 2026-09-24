@@ -684,8 +684,7 @@ sw_up_tile_proxy%data, tile_lw_grey_albedo_proxy%data, sw_down_surf_proxy%data, 
 &soil_sand_proxy%data, dust_mrel_proxy%data, dust_flux_proxy%data, day_of_year, second_of_day, &
 flux_e, flux_h, &
 urbwrr_proxy%data, urbhwr_proxy%data, urbhgt_proxy%data, urbztm_proxy%data, &
-urbdisp_proxy%data, 
-rhostar_proxy%data, recip_l_mo_sea_proxy%data, &
+urbdisp_proxy%data, rhostar_proxy%data, recip_l_mo_sea_proxy%data, &
 &t1_sd_2d_proxy%data, q1_sd_2d_proxy%data, gross_prim_prod_proxy%data, &
 z0h_eff_proxy%data, ocn_cpl_point_proxy%data, lake_t_mxl_gb_proxy%data, lake_t_ice_gb_proxy%data, lake_h_ice_gb_proxy%data, &
 lake_g_dt_gb_proxy%data, lake_depth_gb_proxy%data, hcon_lake_proxy%data, ts1_lake_gb_proxy%data, non_lake_frac_proxy%data, &

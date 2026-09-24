@@ -1032,7 +1032,6 @@ contains
     !However, this is only presently used by river routing so has no effect in
     !LFRic
 
-    allocate(u_s_std_surft(land_pts, ntiles))
     allocate(gamtot_soilt(land_pts, nsoilt))
     allocate(ti_sig_soilt(land_pts, nsoilt))
     allocate(fwetl_soilt(land_pts, nsoilt))
