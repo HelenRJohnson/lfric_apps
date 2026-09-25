@@ -68,6 +68,7 @@ contains
 
     ! Diagnostic fields
     type( field_type ), pointer :: tau_ssi_w2          => null()
+    type( field_type ), pointer :: rhostar             => null()
     type( field_type ), pointer :: hcon_lake           => null()
     type( field_type ), pointer :: ts1_lake_gb         => null()
     type( field_type ), pointer :: non_lake_frac       => null()
@@ -117,6 +118,7 @@ contains
     call surface_fields%get_field('sea_ice_thickness', sea_ice_thickness)
     call surface_fields%get_field('sea_ice_temperature', sea_ice_temperature)
     call surface_fields%get_field('tau_ssi_w2', tau_ssi_w2)
+    call surface_fields%get_field('rhostar', rhostar)
     call surface_fields%get_field('tile_fraction', tile_fraction)
     call surface_fields%get_field('leaf_area_index', leaf_area_index)
     call surface_fields%get_field('canopy_height', canopy_height)
@@ -150,6 +152,7 @@ contains
                  setval_c(sea_ice_temperature, 260.0_r_def),                  &
                  ! Diagnostics
                  setval_c(tau_ssi_w2,          0.0_r_def),                    &
+                 setval_c(rhostar,             1.2743_r_def),                 &
                  ! Land prognostics need initialising
                  setval_c(gc_tile,             0.0_r_def),                    &
                  setval_c(surface_conductance, 0.01_r_def),                   &

@@ -69,7 +69,6 @@ contains
   !>@param[in]     cloud_fields        Fields for cloud scheme
   !>@param[in,out] surface_fields      Fields for surface scheme
   !>@param[in]     recip_l_mo_sea      Inverse Obukhov length over sea only
-  !>@param[in]     rhostar             Surface density
   !>@param[in]     t1_sd_2d            StDev of level 1 temperature
   !>@param[in]     q1_sd_2d            StDev of level 1 humidity
   !>@param[in]     model_clock         Time in the model
@@ -78,8 +77,7 @@ contains
                         microphysics_fields, dmr_mphys, orography_fields, &
                         turbulence_fields, convection_fields,             &
                         cloud_fields, surface_fields,                     &
-                        recip_l_mo_sea, rhostar, t1_sd_2d, q1_sd_2d,      &
-                        model_clock)
+                        recip_l_mo_sea, t1_sd_2d, q1_sd_2d, model_clock)
 
     use bl_exp_kernel_mod, only: bl_exp_kernel_type
     use interp_bl_kernel_mod, only: interp_bl_kernel_type
@@ -103,7 +101,6 @@ contains
     type( field_collection_type ), intent(in)    :: surface_fields
 
     type( field_type ), intent( in )     :: recip_l_mo_sea
-    type( field_type ), intent( in )     :: rhostar
     type( field_type ), intent( in )     :: t1_sd_2d
     type( field_type ), intent( in )     :: q1_sd_2d
 
@@ -189,6 +186,7 @@ contains
     type( field_type ), pointer :: tile_fraction
     type( field_type ), pointer :: tile_temperature
     type( field_type ), pointer :: z0m_eff
+    type( field_type ), pointer :: rhostar
     type( field_type ), pointer :: ustar
     type( field_type ), pointer :: surf_interp_w2
     type( field_type ), pointer :: surf_interp
@@ -314,6 +312,7 @@ contains
     call surface_fields%get_field('tile_fraction', tile_fraction)
     call surface_fields%get_field('tile_temperature', tile_temperature)
     call surface_fields%get_field('z0m_eff', z0m_eff)
+    call surface_fields%get_field('rhostar', rhostar)
     call surface_fields%get_field('ustar', ustar)
     call surface_fields%get_field('surf_interp_w2', surf_interp_w2)
     call surface_fields%get_field('surf_interp', surf_interp)
