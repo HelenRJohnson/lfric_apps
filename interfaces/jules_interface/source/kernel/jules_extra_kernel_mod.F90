@@ -32,7 +32,7 @@ module jules_extra_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_extra_kernel_type
     private
-    type(arg_type) :: meta_args(75) = (/                                       &
+    type(arg_type) :: meta_args(76) = (/                                       &
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! conv_rain
          arg_type(GH_FIELD, GH_REAL, GH_READ,      ANY_DISCONTINUOUS_SPACE_1), & ! ls_snow
@@ -107,7 +107,8 @@ module jules_extra_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! surf_ht_flux_lake
          arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! hcon_lake
          arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_1), & ! ts1_lake_gb
-         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_2)  & ! u_s_std_tile
+         arg_type(GH_FIELD, GH_REAL, GH_READ     , ANY_DISCONTINUOUS_SPACE_2), & ! u_s_std_tile
+         arg_type(GH_FIELD, GH_REAL,GH_READ      , ANY_DISCONTINUOUS_SPACE_1)  & ! latitude
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -200,6 +201,7 @@ contains
   !> @param[in]     hcon_lake              FLake thermal conductivity of the lake-ice/lake/soil sandwich (W/m/K)
   !> @param[in]     ts1_lake_gb            FLake average temperature of lake-ice/lake/soil sandwich (K)
   !> @param[in]     u_s_std_tile           Surface friction velocity (standard value)
+  !> @param[in]     latitude               Latitude of cell centre
   !> @param[in]     ndf_2d                 Total DOFs per cell for 2D fields
   !> @param[in]     undf_2d                Unique DOFs per cell for 2D fields
   !> @param[in]     map_2d                 DOFmap for cells for 2D fields
@@ -292,6 +294,7 @@ contains
                hcon_lake,                  &
                ts1_lake_gb,                &
                u_s_std_tile,               &
+               latitude,                   &
                ndf_2d,                     &
                undf_2d,                    &
                map_2d,                     &
@@ -416,6 +419,7 @@ contains
     use coastal,                  only: coastal_type
 
     use nlsizes_namelist_mod, only: sm_levels, ntiles, bl_levels
+    use planet_constants_mod, only: two_omega
     use UM_ParCore, only: nproc
 
     ! Jules related subroutines
@@ -506,7 +510,6 @@ contains
 
     real(kind=r_def), intent(in) :: sw_down_surf(undf_2d)
     real(kind=r_def), intent(in) :: sw_up_tile(undf_tile)
-    real(kind=r_def), intent(in) :: sw_down_surf_rts()
 
     real(kind=r_def), intent(inout) :: lake_t_mxl_gb(undf_2d)
     real(kind=r_def), intent(inout) :: lake_t_mean_gb(undf_2d)
@@ -553,7 +556,7 @@ contains
 
     ! State
     real(r_um), dimension(:,:), allocatable :: u_s_std_surft
-    
+
     real(r_um), dimension(:,:), allocatable :: fexp_soilt, gamtot_soilt,      &
          ti_mean_soilt, ti_sig_soilt, a_fsat_soilt, c_fsat_soilt,             &
          a_fwet_soilt, c_fwet_soilt
@@ -989,6 +992,7 @@ contains
     end do
 
     ! FLake:
+    allocate(u_s_std_surft(land_pts, ntiles))
     if ( l_flake_model ) then 
       do l = 1, land_pts
         lake_vars%lake_t_mxl_gb(l) = real(lake_t_mxl_gb(map_2d(1,ainfo%land_index(l))), r_um)
@@ -1002,12 +1006,19 @@ contains
         lake_vars%non_lake_frac(l) = real(non_lake_frac(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%hcon_lake(l) = real(hcon_lake(map_2d(1,ainfo%land_index(l))), r_um)
         lake_vars%ts1_lake_gb(l) = real(ts1_lake_gb(map_2d(1,ainfo%land_index(l))), r_um)
-        lake_vars%lake_t_sfc_gb(l) = real(tile_temperature(map_tile(1,ainfo%land_index(l))+lake-1))), r_um)
+        lake_vars%lake_t_sfc_gb(l) = real(tile_temperature(map_tile(1,ainfo%land_index(l))+lake-1), r_um)
         lake_vars%lake_t_snow_gb(l) = real(lake_t_snow_gb(map_2d(1,ainfo%land_index(l))), r_um)
 
-        ! calculate mean albedo of the lake tile on model timesteps
-        lake_vars%lake_albedo_gb(l) = real(1.0 - (fluxes%sw_surft(l,lake)     &
-             / sw_down_surf(map_2d(1,ainfo%land_index(l)))), r_um)
+        ! calculate coriolis parameter:
+        lake_vars%coriolis_param_gb(l) = real(two_omega * sin(latitude(map_2d(1,ainfo%land_index(l)))), r_um)
+
+        ! calculate mean albedo of the lake tile on model timesteps (daytime only)
+        if (sw_down_surf(map_2d(1,ainfo%land_index(l))) > epsilon(1.0)) then
+          lake_vars%lake_albedo_gb(l) = real(1.0 - (fluxes%sw_surft(l,lake)     &
+               / sw_down_surf(map_2d(1,ainfo%land_index(l)))), r_um)
+        else
+          lake_vars%lake_albedo_gb(l) = 0.0_r_um
+        end if
         
         ! set the FLake snow depth, depending on the presence of ice
         lake_vars%lake_h_snow_gb(l) = 0.0

@@ -493,7 +493,7 @@ contains
     use jules_soil_biogeochem_mod, only: dim_ch4layer, soil_bgc_model,         &
                                          soil_model_ecosse, l_layeredc
     use jules_surface_mod, only: l_urban2t, l_flake_model
-    use jules_surface_types_mod, only: npft, ntype, ncpft, nnpft, soil
+    use jules_surface_types_mod, only: npft, ntype, ncpft, nnpft, soil, lake
     use jules_urban_mod, only: l_moruses
     use jules_vegetation_mod, only: l_crop, l_triffid, l_phenol, l_use_pft_psi,&
                                     can_rad_mod, l_acclim, l_sugar, l_red
@@ -1214,7 +1214,7 @@ contains
         ! Copy surface temperature from previous timestep to FLake field before
         ! temperature update: (done here to avoid additional prognostic that
         ! needs checkpointing, used in jules_extra)
-        lake_t_snow_gb(map_2d(1,ainfo%land_index(l))) = real(tile_temperature(map_tile((1,ainfo%land_index(l))+lake-1)), r_def)
+        lake_t_snow_gb(map_2d(1,ainfo%land_index(l))) = real(tile_temperature(map_tile(1,ainfo%land_index(l))+lake-1), r_def)
       end do
     end if
 
@@ -1895,7 +1895,7 @@ contains
         hcon_lake(map_2d(1,ainfo%land_index(l))) = real(lake_vars%hcon_lake(l), r_def)
         ts1_lake_gb(map_2d(1,ainfo%land_index(l))) = real(lake_vars%ts1_lake_gb(l), r_def)
         do n = 1, n_land_tile
-           u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1) = real(aerotype%u_s_std_surft(l,n), r_def)
+          u_s_std_tile(map_tile(1,ainfo%land_index(l))+n-1) = real(aerotype%u_s_std_surft(l,n), r_def)
         end do
       end do
     end if

@@ -235,10 +235,10 @@ contains
        call surface_fields%get_field('non_lake_frac', non_lake_frac)
        call surface_fields%get_field('lake_t_snow_gb', lake_t_snow_gb)
        call surface_fields%get_field('u_s_std_tile', u_s_std_tile)
-       call invoke( setval_c(lake_t_mxl_gb, 277.0_r_def),                     &
-                    setval_c(lake_t_mean_gb, 277.0_r_def),                    &
+       call invoke( setval_c(lake_t_mxl_gb, 275.0_r_def),                     &
+                    setval_c(lake_t_mean_gb, 280.0_r_def),                    &
                     setval_c(lake_t_ice_gb, 270.0_r_def),                     &
-                    setval_c(lake_h_mxl_gb, 0.0_r_def),                       &
+                    setval_c(lake_h_mxl_gb, 2.0_r_def),                       &
                     setval_c(lake_h_ice_gb, 0.0_r_def),                       &
                     setval_c(lake_shape_factor_gb, 0.5_r_def),                &
                     setval_c(lake_g_dt_gb, 1.0e-10_r_def),                    &
