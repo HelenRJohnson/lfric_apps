@@ -997,6 +997,7 @@
         "tsteps": 432,
         "wallclock": 5,
         "kgo_checks": ["checksum"],
+        "log_level": "info",
         "plot_str": "plot_scm.py $NODAL_DATA_DIR/lfric_diagnostics.nc  $PLOT_DIR",
     }) %}
 

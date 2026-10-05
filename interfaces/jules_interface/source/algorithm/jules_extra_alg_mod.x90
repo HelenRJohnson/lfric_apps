@@ -12,7 +12,9 @@ module jules_extra_alg_mod
   use field_mod,                     only: field_type
   use integer_field_mod,             only: integer_field_type
   use field_collection_mod,          only: field_collection_type
+  use fs_continuity_mod,             only: W3
   use mesh_mod,                      only: mesh_type
+  use sci_geometric_constants_mod,   only: get_latitude_fv
 
   use timing_mod,         only: start_timing, stop_timing, &
                                 tik, LPROF
@@ -118,6 +120,7 @@ contains
     type( field_type ), pointer :: hcon_lake              => null()
     type( field_type ), pointer :: ts1_lake_gb            => null()
     type( field_type ), pointer :: u_s_std_tile           => null()
+    type( field_type ), pointer :: latitude               => null()
 
     ! Sea ice fields
     type( field_type ), pointer :: sea_ice_thickness      => null()
@@ -285,6 +288,7 @@ contains
                                          grid_throughfall)
 
     mesh => ls_rain%get_mesh()
+    latitude => get_latitude_fv(config, mesh, W3)
     ncells = mesh%get_last_edge_cell()
     call um_sizes_init(ncells)
 
@@ -318,7 +322,7 @@ contains
                            lake_t_snow_gb, lake_h_mxl_gb, lake_h_ice_gb,       &
                            lake_shape_factor_gb, lake_g_dt_gb, lake_depth_gb,  &
                            non_lake_frac, surf_ht_flux_lake, hcon_lake,        &
-                           ts1_lake_gb, u_s_std_tile) )
+                           ts1_lake_gb, u_s_std_tile, latitude) )
 
     if ( lake_water_conservation ) then
       call lake_water_correction(config, lake_evap, soil_moisture,             &
